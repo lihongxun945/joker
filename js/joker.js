@@ -1,5 +1,5 @@
 /**
-*@author 
+*@author axun,lixiang 
 *@time 2011.10.22
 */
 
@@ -16,11 +16,9 @@ joker.dom={};
 
 /**
 *根据classname取得元素
-*@param
-*    {string} strClassName：要查找的className
-*    {object} objElm:目标元素，取目标元素的子元素
-*@return
-*	{array} 
+*@param    {string} strClassName：要查找的className
+*@param    {object} objElm:目标元素，取目标元素的子元素
+*@return   {array}
 */
 joker.dom.getElementsByClassName=function(strClassName,objElm){
     var arrElements = (objElm == undefined)?document.all:objElm.all;
@@ -37,11 +35,9 @@ joker.dom.getElementsByClassName=function(strClassName,objElm){
 
 /**
 *	根据id获取元素
-*@param
-*	{string}
-*	{object} objElm:目标元素，取目标元素的子元素
-*@return 
-*	{object}
+*@param	{string}
+*@param	{object} objElm:目标元素，取目标元素的子元素
+*@return {object} 
 */
 joker.dom.getElementById=function(strId,objElm){
 	if(objElm == undefined) objElm = document;
@@ -64,9 +60,8 @@ joker.io = {};
 
 /**
 *加载jsonp
-*@param
-*	{string} strUrl:要加载的资源地址
-*	{function} callback:加载完成后执行的回调函数
+*@param	{string} strUrl:要加载的资源地址
+*@param	{function} callback:加载完成后执行的回调函数
 */
 joker.io.getjsonp=function(strUrl,callback){
 	var head = document.getElementsByTagName( "head" )[ 0 ] || document.documentElement,
