@@ -19,6 +19,7 @@ joker.dom={};
 *@param    {string} strClassName：要查找的className
 *@param#optional    {object} objElm:目标元素，取目标元素的子元素
 *@return   {array}
+*@time 2011.10.22
 *@refer http://www.cnblogs.com/rubylouvre/archive/2009/07/24/1529640.html
 */
 joker.dom.getElementsByClassName=function(strClassName,objElm){
@@ -40,6 +41,7 @@ joker.dom.getElementsByClassName=function(strClassName,objElm){
 *@param    {string} strTagName：要查找的TagName
 *@param#optional    {object} objElm:目标元素，取目标元素的子元素
 *@return   {array}
+*@time 2011.10.23
 */
 joker.dom.getElementsByTagName=function(strTagName,objElm){
 	objElm = objElm || document;
@@ -56,20 +58,67 @@ joker.dom.getElementsByTagName=function(strTagName,objElm){
 *@param	{string} id
 *@param#optional	{object} objElm:目标元素，取目标元素的子元素
 *@return {object} 
+*@time 2011.10.23
 */
 joker.dom.getElementById=function(strId,objElm){
 	objElm = objElm || document;
 	return objElm.getElementById(strId);
 }
 
+/*
+*	在children中根据classname来取元素
+*@param {string} strClassName:
+*@param {object} objElm:
+*@return {array}
+*@time 2011.10.23
+*/
+joker.dom.getChildrenByClassName = function(strClassName, objElm){
+	objElm = objElm || document;
+	var children = objElm.children || objElm.childNodes;	//document不支持children,但是支持childNodes
+	var arrResults = new Array();
+	for(var i = 0; i < children.length; i++){
+		if(children[i].className == strClassName) arrResults.push(children[i]);
+	}
+	return arrResults;
+}
+/*
+*	在children中根据tagname来取元素
+*@param {string} strTagName: tagName不区分大小写
+*@param {object} objElm:
+*@return {array}
+*@time 2011.10.23
+*/
+joker.dom.getChildrenByTagName = function(strTagName, objElm){
+	objElm = objElm || document;
+	var children = objElm.children || objElm.childNodes;	//document不支持children,但是支持childNodes
+	var arrResults = new Array();
+	for(var i = 0; i < children.length; i++){
+		if(children[i].tagName.toUpperCase() == strTagName.toUpperCase()) arrResults.push(children[i]);
+	}
+	return arrResults;
+}
+/*
+*	在children中根据id来取元素
+*@param {string} strId:
+*@param {object} objElm:
+*@return {object}
+*@time 2011.10.23
+*/
+joker.dom.getChildById = function(strId, objElm){
+	objElm = objElm || document;
+	var children = objElm.children || childNodes;
+	for(var i = 0; i < children.length; i++){
+		if(children[i].id == strId) return children[i];
+	}
+}
 /**
-* 获取元素的通用方法,支持类似css2中的选择器：元素选择器，类选择器，id选择器，后代选择器
+* 获取元素的通用方法,支持类似css2中的选择器：元素选择器，类选择器，id选择器，后代选择器，子元素选择器
 *@param {string} strSelector :选择器表达式
 *@param#optional {obj} objElm:目标元素
 *@return {array}
 *@author axun;
 *@time 2011.10.23;
-*@example joker.dom.g(".header #title a"); joker.dom.g("body.container div#utity a");
+*@example joker.dom.g(".header #title a"); joker.dom.g("body.container div#utity a"); joker.dom.g("div#course > span");
 */
 
 joker.dom.g=function(strSelector,objElm){
@@ -79,23 +128,45 @@ joker.dom.g=function(strSelector,objElm){
 	var tempResults;	//存储查找的中间结果
 	var token;
 	var element;
+	var childrenTag = false;	//上一个标记是否是> 如果是，则下一次查找只查找孩子 而不是后代
 	for(var i=0;i<tokens.length;i++){
 		tempResults = new Array();
 		token = tokens[i];
+		if(token == ">") {
+			childrenTag = true;
+			continue;
+		}
 		for(var j=0;j<arrElements.length;j++){
 			element = arrElements[j];
 			if(token.charAt(0) == '#') {	//id
-				tempResults.push(joker.dom.getElementById(token.substr(1),element));
+				if(childrenTag == true){
+					tempResults.push(joker.dom.getChildById(token.substr(1),element));
+					childrenTag = false;
+				}else{
+					tempResults.push(joker.dom.getElementById(token.substr(1),element));
+				}
 			}
 			else if(token.charAt(0) == '.') {
-				tempResults = tempResults.concat(joker.dom.getElementsByClassName(token.substr(1),element));
+				if(childrenTag == true){
+					tempResults = tempResults.concat(joker.dom.getChildrenByClassName(token.substr(1),element));
+					childrenTag = false;
+				}else {
+					tempResults = tempResults.concat(joker.dom.getElementsByClassName(token.substr(1),element));
+				}
 			}
 			else{	//对于元素选择器，可能存在div.classname或者div#id,或者div.classname1.classname2#id这样的情况
 				//先对#和.进行分割
 				token = token.replace(/\./g,' \.');
 				token = token.replace(/\#/g,' \#');
 				token = token.split(" ");
-				tempResults = tempResults.concat(joker.dom.getElementsByTagName(token[0],element));	//注意，不要用document.getElementsByTagName方法，因为它返回的是nodeList对象，而不是数组,不支持数组方法。
+				if(childrenTag == true){
+					tempResults = tempResults.concat(joker.dom.getChildrenByTagName(token[0],element));	
+					//注意，不要用document.getElementsByTagName方法，因为它返回的是nodeList对象，而不是数组,不支持数组方法。
+					childrenTag = false;
+				}else{
+					tempResults = tempResults.concat(joker.dom.getElementsByTagName(token[0],element));	
+					//注意，不要用document.getElementsByTagName方法，因为它返回的是nodeList对象，而不是数组,不支持数组方法。
+				}
 				if(token.length>1){	//然后把结果中不符合id和classname的值删除
 					for(var k=1;k<token.length;k++){
 						t = token[k];
@@ -133,6 +204,7 @@ joker.io = {};
 *加载jsonp
 *@param	{string} strUrl:要加载的资源地址
 *@param	{function} callback:加载完成后执行的回调函数
+*@time 2011.10.22
 */
 joker.io.getjsonp=function(strUrl,callback){
 	var head = document.getElementsByTagName( "head" )[ 0 ] || document.documentElement,
