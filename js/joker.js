@@ -15,14 +15,14 @@ var joker={};
 joker.dom={};
 
 /**
-*根据classname取得元素
+*根据classname取得元素,原生的getElementsByClassName兼容性很好，但是只能document有此方法
 *@param    {string} strClassName：要查找的className
 *@param#optional    {object} objElm:目标元素，取目标元素的子元素
 *@return   {array}
 *@time 2011.10.22
 *@refer http://www.cnblogs.com/rubylouvre/archive/2009/07/24/1529640.html
 */
-joker.dom.getElementsByClassName=function(strClassName,objElm){
+joker.dom.getElementsByClassName = function(strClassName, objElm){
     var arrElements = (objElm == undefined)?(document.all || document.getElementsByTagName("*")):(objElm.all || objElm.getElementsByTagName("*"));
     //只有ie支持all，非ie用getElementsByTagName("*")
     var arrResults = new Array();
@@ -44,13 +44,16 @@ joker.dom.getElementsByClassName=function(strClassName,objElm){
 *@time 2011.10.23
 */
 joker.dom.getElementsByTagName=function(strTagName,objElm){
-	objElm = objElm || document;
+	/*objElm = objElm || document;
 	var arrResults = new Array();
 	var nodes = objElm.getElementsByTagName(strTagName);
 	for(var i = 0; i < nodes.length; i++){
 		arrResults.push(nodes[i]);
 	}
-	return (arrResults);
+	return (arrResults);*/
+	
+	objElm = objElm || document;
+	return joker.array.nodeListToArray(objElm.getElementsByTagName(strTagName));
 }
 
 /**
@@ -61,8 +64,17 @@ joker.dom.getElementsByTagName=function(strTagName,objElm){
 *@time 2011.10.23
 */
 joker.dom.getElementById=function(strId,objElm){
-	objElm = objElm || document;
-	return objElm.getElementById(strId);
+	var arrElements = (objElm == undefined)?(document.all || document.getElementsByTagName("*")):(objElm.all || objElm.getElementsByTagName("*"));
+	//只有ie支持all，非ie用getElementsByTagName("*")
+	var arrResults = new Array();
+	var objElement;
+	for(var i=0; i < arrElements.length; i++){
+		objElement = arrElements[i];
+		if(strId == objElement.id){
+			return objElement;
+		}
+	}
+
 }
 
 /*
@@ -106,13 +118,14 @@ joker.dom.getChildrenByTagName = function(strTagName, objElm){
 */
 joker.dom.getChildById = function(strId, objElm){
 	objElm = objElm || document;
-	var children = objElm.children || childNodes;
+	var children = objElm.children || objElm.childNodes;
 	for(var i = 0; i < children.length; i++){
 		if(children[i].id == strId) return children[i];
 	}
 }
 /**
-* 获取元素的通用方法,支持类似css2中的选择器：元素选择器，类选择器，id选择器，后代选择器，子元素选择器
+* 获取元素的通用方法,对于不支持querySelectorAll()方法的浏览器，支持类似css2中的选择器：元素选择器，类选择器，id选择器，后代选择器，子元素选择器
+*对于支持querySelectorAll()的浏览器，调用此方法，将结果转换为数组后返回。此方法支持所有的css选择器。
 *@param {string} strSelector :选择器表达式
 *@param#optional {obj} objElm:目标元素
 *@return {array}
@@ -121,22 +134,30 @@ joker.dom.getChildById = function(strId, objElm){
 *@example joker.dom.g(".header #title a"); joker.dom.g("body.container div#utity a"); joker.dom.g("div#course > span");
 */
 
-joker.dom.g=function(strSelector,objElm){
+joker.dom.q = function(strSelector, objElm){
 	var arrElements = new Array();
-	arrElements.push(objElm || document);
+	objElm = objElm || document;
+	arrElements.push(objElm);
+	//先判断浏览器是否支持querySelectorAll(),如果是，则调用此方法
+	if(objElm.querySelectorAll) return objElm.querySelectorAll(strSelector);
+
+	//对于不支持querySelectorAll()方法的浏览器,则用自己实现的方法
+	//进行预处理，使格式规范
+	strSelector = strSelector.replace(/>/g,' > ');	//子元素选择器 总是用空格隔开,可能会产生多余的空格，但是最后会全部删掉	
+	strSelector = strSelector.replace(/  /g,' ');//删除多余的空格
 	var tokens = strSelector.split(" ");
 	var tempResults;	//存储查找的中间结果
 	var token;
 	var element;
 	var childrenTag = false;	//上一个标记是否是> 如果是，则下一次查找只查找孩子 而不是后代
-	for(var i=0;i<tokens.length;i++){
+	for(var i=0; i<tokens.length; i++){
 		tempResults = new Array();
 		token = tokens[i];
 		if(token == ">") {
 			childrenTag = true;
 			continue;
 		}
-		for(var j=0;j<arrElements.length;j++){
+		for(var j = 0; j < arrElements.length; j++){
 			element = arrElements[j];
 			if(token.charAt(0) == '#') {	//id
 				if(childrenTag == true){
@@ -167,11 +188,11 @@ joker.dom.g=function(strSelector,objElm){
 					tempResults = tempResults.concat(joker.dom.getElementsByTagName(token[0],element));	
 					//注意，不要用document.getElementsByTagName方法，因为它返回的是nodeList对象，而不是数组,不支持数组方法。
 				}
-				if(token.length>1){	//然后把结果中不符合id和classname的值删除
-					for(var k=1;k<token.length;k++){
+				if(token.length > 1){	//然后把结果中不符合id和classname的值删除
+					for(var k = 1;k < token.length; k++){
 						t = token[k];
 						if(t.charAt(0) == '#'){
-							for(var a=0;a<tempResults.length;a++){
+							for(var a = 0; a < tempResults.length; a++){
 								if(tempResults[a].id != t.substr(1)){
 									tempResults.splice(a,1);
 									a--;	//注意，在遍历数组并删除时，当删除了一个元素后要index--，否则会漏掉对当前index元素的判断。不要犯这个错误。
@@ -179,7 +200,7 @@ joker.dom.g=function(strSelector,objElm){
 							}
 						}
 						if(t.charAt(0) == '.'){
-							for(var a=0;a<tempResults.length;a++){
+							for(var a = 0; a<tempResults.length; a++){
 								if(tempResults[a].className != t.substr(1)){
 									tempResults.splice(a,1);
 									a--;
@@ -206,7 +227,7 @@ joker.io = {};
 *@param	{function} callback:加载完成后执行的回调函数
 *@time 2011.10.22
 */
-joker.io.getjsonp=function(strUrl,callback){
+joker.io.getjsonp = function(strUrl, callback){
 	var head = document.getElementsByTagName( "head" )[ 0 ] || document.documentElement,
 	script = document.createElement( "script" );
 	script.async = "async";
@@ -228,4 +249,24 @@ joker.io.getjsonp=function(strUrl,callback){
 	// This arises when a base node is used (#2709 and #4378).
 	head.insertBefore( script, head.firstChild);
 	if(callback) callback(); 
+}
+
+
+
+
+/**
+*数组方法
+*/
+
+joker.array = {};
+
+/**
+  *将一个nodeList转换成数组
+  */
+joker.array.nodeListToArray = function(nodes){
+	var arrResults = new Array();
+	for(var i = 0; i < nodes.length; i++){
+		arrResults.push(nodes[i]);
+	}
+	return arrResults;
 }
