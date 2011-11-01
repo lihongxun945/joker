@@ -7,6 +7,11 @@
 
 var joker={};
 
+/*
+*********************************************************
+********************** dom 操作 *************************
+**********************************************************
+*/
 /**
 *joker.dom
 *提供常用的dom操作
@@ -15,10 +20,59 @@ var joker={};
 joker.dom={};
 
 /**
+  *dom节点类型
+  *@time 2011.11.01
+  */
+joker.dom.NodeType = {
+	ELEMENT: 1,
+  	ATTRIBUTE: 2,
+  	TEXT: 3,
+  	CDATA_SECTION: 4,
+  	ENTITY_REFERENCE: 5,
+  	ENTITY: 6,
+  	PROCESSING_INSTRUCTION: 7,
+  	COMMENT: 8,
+  	DOCUMENT: 9,
+  	DOCUMENT_TYPE: 10,
+  	DOCUMENT_FRAGMENT: 11,
+  	NOTATION: 12  
+}
+
+/**
+  *创建一个Element元素
+  *
+  *
+  *@time 2011.11.01
+  */
+joker.dom.createElement = function(strName){
+	return document.createElement(strName);
+}
+
+/**
+  *获取所有的子元素,不包括注释
+  *@param {Node} elm:
+  *@return {Array<Node>}:
+  *@time 2011.11.01
+  */
+joker.dom.getChildren = function(elm){
+	var result = elm.children;
+	if(result) return result;
+	//对于不支持children属性的浏览器，把childNodes中的comment节点删除
+	var children = elm.childNodes;
+
+	result = new Array();
+	for(var i = 0, length = children.length; i < length; i++){
+		if(children[i].nodeType == joker.dom.NodeType.ELEMENT)
+			result.push(children[i]);
+	}
+	return result;
+}
+
+/**
 *根据classname取得元素,原生的getElementsByClassName兼容性很好，但是只能document有此方法
-*@param    {string} strClassName：要查找的className
-*@param#optional    {object} objElm:目标元素，取目标元素的子元素
-*@return   {array}
+*@param    {String} strClassName：要查找的className
+*@param#optional    {Element} objElm:目标元素，取目标元素的子元素
+*@return   {Array}
 *@time 2011.10.22
 *@refer http://www.cnblogs.com/rubylouvre/archive/2009/07/24/1529640.html
 */
@@ -38,32 +92,24 @@ joker.dom.getElementsByClassName = function(strClassName, objElm){
 
 /**
 *根据tagName取得元素,返回值是数组（原生的js返回值是nodeList)
-*@param    {string} strTagName：要查找的TagName
-*@param#optional    {object} objElm:目标元素，取目标元素的子元素
-*@return   {array}
+*@param    {String} strTagName：要查找的TagName
+*@param	{Element} objElm:目标元素，取目标元素的子元素
+*@return   {Array}
 *@time 2011.10.23
 */
-joker.dom.getElementsByTagName=function(strTagName,objElm){
-	/*objElm = objElm || document;
-	var arrResults = new Array();
-	var nodes = objElm.getElementsByTagName(strTagName);
-	for(var i = 0; i < nodes.length; i++){
-		arrResults.push(nodes[i]);
-	}
-	return (arrResults);*/
-	
+joker.dom.getElementsByTagName = function(strTagName,objElm){
 	objElm = objElm || document;
 	return joker.array.nodeListToArray(objElm.getElementsByTagName(strTagName));
 }
 
 /**
-*	根据id获取元素
-*@param	{string} id
-*@param#optional	{object} objElm:目标元素，取目标元素的子元素
-*@return {object} 
+*根据id获取元素
+*@param	{String} id
+*@param {Element} objElm:目标元素，取目标元素的子元素
+*@return {Element} 
 *@time 2011.10.23
 */
-joker.dom.getElementById=function(strId,objElm){
+joker.dom.getElementById = function(strId,objElm){
 	var arrElements = (objElm == undefined)?(document.all || document.getElementsByTagName("*")):(objElm.all || objElm.getElementsByTagName("*"));
 	//只有ie支持all，非ie用getElementsByTagName("*")
 	var arrResults = new Array();
@@ -78,15 +124,15 @@ joker.dom.getElementById=function(strId,objElm){
 }
 
 /*
-*	在children中根据classname来取元素
-*@param {string} strClassName:
-*@param {object} objElm:
-*@return {array}
+*在children中根据classname来取元素
+*@param {String} strClassName:
+*@param {Element} objElm:
+*@return {Array}
 *@time 2011.10.23
 */
 joker.dom.getChildrenByClassName = function(strClassName, objElm){
 	objElm = objElm || document;
-	var children = objElm.children || objElm.childNodes;	//document不支持children,但是支持childNodes
+	var children = joker.dom.getChildren(objElm);
 	var arrResults = new Array();
 	for(var i = 0; i < children.length; i++){
 		if(children[i].className == strClassName) arrResults.push(children[i]);
@@ -94,15 +140,15 @@ joker.dom.getChildrenByClassName = function(strClassName, objElm){
 	return arrResults;
 }
 /*
-*	在children中根据tagname来取元素
-*@param {string} strTagName: tagName不区分大小写
-*@param {object} objElm:
-*@return {array}
+*在children中根据tagname来取元素
+*@param {String} strTagName: tagName不区分大小写
+*@param {Element} objElm:
+*@return {Array}
 *@time 2011.10.23
 */
 joker.dom.getChildrenByTagName = function(strTagName, objElm){
 	objElm = objElm || document;
-	var children = objElm.children || objElm.childNodes;	//document不支持children,但是支持childNodes
+	var children = joker.dom.getChildren(objElm);
 	var arrResults = new Array();
 	for(var i = 0; i < children.length; i++){
 		if(children[i].tagName.toUpperCase() == strTagName.toUpperCase()) arrResults.push(children[i]);
@@ -110,25 +156,72 @@ joker.dom.getChildrenByTagName = function(strTagName, objElm){
 	return arrResults;
 }
 /*
-*	在children中根据id来取元素
-*@param {string} strId:
-*@param {object} objElm:
-*@return {object}
+*在children中根据id来取元素
+*@param {String} strId:
+*@param {Elementlement} objElm:
+*@return {Element}
 *@time 2011.10.23
 */
 joker.dom.getChildById = function(strId, objElm){
 	objElm = objElm || document;
-	var children = objElm.children || objElm.childNodes;
+	var children = joker.dom.getChildren(objElm);
 	for(var i = 0; i < children.length; i++){
 		if(children[i].id == strId) return children[i];
 	}
 }
+
+
+/**
+  *取得第一个Element类型的孩子节点
+  *@param {Node} node
+  *@return {Element}
+  *@time 2011.11.01
+  */
+joker.dom.getFirstChild = function(node){
+	return (node.firstChild.nodeType == joker.dom.NodeType.ElEMENT)?
+		node.firstChild : joker.dom.getChildren(node)[0];
+}
+
+/**
+  *取得最后一个Element类型的孩子节点
+  *@param {Node} node
+  *@return {Element}
+  *@time 2011.11.01
+  */
+joker.dom.getLastChild = function(node){
+	if(node.lastChild.nodeType == joker.dom.NodeType.ElEMENT)
+		return node.lastChild;
+	var children = joker.dom.getChildren(node);
+	return children[children.length-1];
+}
+
+/**
+  *取得父节点
+  *@param {Node} node;
+  *@return {Node}
+  *@time 2011.11.01
+  */
+joker.dom.getParentNode = function(node){
+	return node.parentNode;
+}
+
+/**
+  *删除一个子节点
+  *@param {Node} parent
+  *@param {Node} child
+  *@return {Node}
+  *@time 2011.11.01
+  */
+joker.dom.removeChild = function(parent,child){
+	return parent.removeChild(child);
+}
+
 /**
 * 获取元素的通用方法,对于不支持querySelectorAll()方法的浏览器，支持类似css2中的选择器：元素选择器，类选择器，id选择器，后代选择器，子元素选择器
 *对于支持querySelectorAll()的浏览器，调用此方法，将结果转换为数组后返回。此方法支持所有的css选择器。
-*@param {string} strSelector :选择器表达式
-*@param#optional {obj} objElm:目标元素
-*@return {array}
+*@param {String} strSelector :选择器表达式
+*@param {Element} objElm:目标元素
+*@return {Array}
 *@author axun;
 *@time 2011.10.23;
 *@example joker.dom.g(".header #title a"); joker.dom.g("body.container div#utity a"); joker.dom.g("div#course > span");
@@ -217,8 +310,41 @@ joker.dom.q = function(strSelector, objElm){
 }
 
 /**
-*输入输出流
+  *向元素子节点末尾追加一个孩子节点
+  *@param {Node} parent:父元素
+  *@param {Node} child:子元素
+  *@time 2011.11.01
+  */
+joker.dom.appendChild = function(parent, child){
+	parent.appendChild(child);
+}
+
+/**
+  *向父元素节点末尾追加多个孩子节点
+  *@param {Node} parent:
+  *@param {Array<Node>} children:
+  *@time 2011.11.01
+  */
+joker.dom.appendChildren = function(parent, arr_children){
+	for(var i = 0,length = arr_children.length; i < length; i++){
+		parent.appendChild(arr_children[i]);
+	}
+}
+
+
+
+
+
+
+/*
+*********************************************************
+***********************输入输出流*************************
+**********************************************************
 */
+/**
+  *joker.io
+  *提供常用的io操作
+  */
 joker.io = {};
 
 /**
@@ -270,3 +396,4 @@ joker.array.nodeListToArray = function(nodes){
 	}
 	return arrResults;
 }
+
