@@ -2,7 +2,9 @@
 *设计原则：
 *兼容主流的浏览器：ie6+, firefox, chrome, opera.
 *dom操作除非注明，否则都忽略注释节点，比如getChildren会过滤掉注释节点。
+*以"_"开头的都是私有属性
 *以opt_开头的参数都是可选的
+*注释中有@author 的是原创的比较重要的或者是实现比较复杂的函数,是测试的重点
 *@author axun,lixiang 
 *@time 2011.10.22
 */
@@ -218,8 +220,8 @@ joker.dom.getParentNode = function(node){
 *@param {String} strSelector :选择器表达式
 *@param {Element} objElm:目标元素
 *@return {Array}
-*@author axun;
 *@time 2011.10.23;
+*@author axun;
 *@example joker.dom.q(".header #title a"); joker.dom.q("body.container div#utity a"); joker.dom.q("div#course > span");
 */
 
@@ -310,7 +312,6 @@ joker.dom.q = function(strSelector, opt_elm){
   **@param {String} strSelector :选择器表达式
   *@param {Element} objElm:目标元素
   *@return {Node}
-  *@author axun;
   *@time 2011.10.23;
   *@example joker.dom.g(".header #title a"); joker.dom.g("body.container div#utity a"); joker.dom.g("div#course > span");
   *
@@ -471,3 +472,75 @@ joker.array.nodeListToArray = function(nodes){
 	return arrResults;
 }
 
+
+
+/**
+  *json处理
+  *
+  */
+joker.json = joker.json || {};
+
+/**
+  *将字符串转成json对象，注意先要进行安全性验证
+  *@param {String} str:
+  *@return {Object}
+  *@time 2011.11.02
+  */
+joker.json.parse = function(str){
+	return eval("("+str+")");
+}
+
+
+/**
+  *私有函数，递归实现对json对象的序列化
+  *@param {Object} obj:要序列化的对象
+  *@return {String}
+  *@time 2011.11.02
+  *@author axun;
+  */
+joker.json._seri = function(obj){
+	var strResult = "";
+	//先检测是不是数组，不要把顺序搞反了，因为数组也是对象
+	if(obj instanceof Array){
+		strResult += "[";
+		for(var i = 0, length = obj.length; i < length; i++){
+			strResult += this._seri(obj[i])+((i == length - 1)?"":",");
+		}
+		strResult += "]";
+		return strResult;
+	}
+	//再检查是不是对象
+	if(obj instanceof Object){
+		strResult += "{";
+		var first = true;//是不是第一次循环，用来判断是不是要加","
+		for(var key in obj){
+			strResult += (first?"":",")+key+":"+this._seri(obj[key]);
+			first = false;
+		}
+		
+		strResult += "}";
+		return strResult;
+	}
+	//不是数组，也不是对象，则是 字符串，数字或者布尔类型
+
+	if((typeof obj) == "number")
+		return obj;
+	if((typeof obj) == "string"){
+		return "\""+obj+"\"";
+	}
+	return obj;
+
+}
+
+/**
+  *递归实现对json对象的序列化，调用私有函数_seri来实现。
+  *应该达到的效果是:对任意obj,serialize(parse(obj)) 和obj是完全一样的。
+  *@param {Object} obj:
+  *@return {String}
+  *@time 2011.11.02
+  *@author axun
+  */
+
+joker.json.serialize = function(obj){
+	return joker.json._seri(obj);
+}
