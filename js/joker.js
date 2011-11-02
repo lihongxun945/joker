@@ -1,4 +1,8 @@
 /**
+*设计原则：
+*兼容主流的浏览器：ie6+, firefox, chrome, opera.
+*dom操作除非注明，否则都忽略注释节点，比如getChildren会过滤掉注释节点。
+*以opt_开头的参数都是可选的
 *@author axun,lixiang 
 *@time 2011.10.22
 */
@@ -71,13 +75,13 @@ joker.dom.getChildren = function(elm){
 /**
 *根据classname取得元素,原生的getElementsByClassName兼容性很好，但是只能document有此方法
 *@param    {String} strClassName：要查找的className
-*@param#optional    {Element} objElm:目标元素，取目标元素的子元素
+*@param#optional    {Element} opt_elm:目标元素，取目标元素的子元素
 *@return   {Array}
 *@time 2011.10.22
 *@refer http://www.cnblogs.com/rubylouvre/archive/2009/07/24/1529640.html
 */
-joker.dom.getElementsByClassName = function(strClassName, objElm){
-    var arrElements = (objElm == undefined)?(document.all || document.getElementsByTagName("*")):(objElm.all || objElm.getElementsByTagName("*"));
+joker.dom.getElementsByClassName = function(strClassName, opt_elm){
+    var arrElements = (opt_elm == undefined)?(document.all || document.getElementsByTagName("*")):(opt_elm.all || opt_elm.getElementsByTagName("*"));
     //只有ie支持all，非ie用getElementsByTagName("*")
     var arrResults = new Array();
     var objElement;
@@ -93,24 +97,24 @@ joker.dom.getElementsByClassName = function(strClassName, objElm){
 /**
 *根据tagName取得元素,返回值是数组（原生的js返回值是nodeList)
 *@param    {String} strTagName：要查找的TagName
-*@param	{Element} objElm:目标元素，取目标元素的子元素
+*@param	{Element} opt_elm:目标元素，取目标元素的子元素
 *@return   {Array}
 *@time 2011.10.23
 */
-joker.dom.getElementsByTagName = function(strTagName,objElm){
-	objElm = objElm || document;
+joker.dom.getElementsByTagName = function(strTagName, opt_elm){
+	objElm = opt_elm || document;
 	return joker.array.nodeListToArray(objElm.getElementsByTagName(strTagName));
 }
 
 /**
 *根据id获取元素
 *@param	{String} id
-*@param {Element} objElm:目标元素，取目标元素的子元素
+*@param {Element} opt_elm:目标元素，取目标元素的子元素
 *@return {Element} 
 *@time 2011.10.23
 */
-joker.dom.getElementById = function(strId,objElm){
-	var arrElements = (objElm == undefined)?(document.all || document.getElementsByTagName("*")):(objElm.all || objElm.getElementsByTagName("*"));
+joker.dom.getElementById = function(strId, opt_elm){
+	var arrElements = (opt_elm == undefined)?(document.all || document.getElementsByTagName("*")):(opt_elm.all || opt_elm.getElementsByTagName("*"));
 	//只有ie支持all，非ie用getElementsByTagName("*")
 	var arrResults = new Array();
 	var objElement;
@@ -126,12 +130,12 @@ joker.dom.getElementById = function(strId,objElm){
 /*
 *在children中根据classname来取元素
 *@param {String} strClassName:
-*@param {Element} objElm:
+*@param {Element} opt_elm:
 *@return {Array}
 *@time 2011.10.23
 */
-joker.dom.getChildrenByClassName = function(strClassName, objElm){
-	objElm = objElm || document;
+joker.dom.getChildrenByClassName = function(strClassName, opt_elm){
+	objElm = opt_elm || document;
 	var children = joker.dom.getChildren(objElm);
 	var arrResults = new Array();
 	for(var i = 0; i < children.length; i++){
@@ -142,12 +146,12 @@ joker.dom.getChildrenByClassName = function(strClassName, objElm){
 /*
 *在children中根据tagname来取元素
 *@param {String} strTagName: tagName不区分大小写
-*@param {Element} objElm:
+*@param {Element} opt_elm:
 *@return {Array}
 *@time 2011.10.23
 */
-joker.dom.getChildrenByTagName = function(strTagName, objElm){
-	objElm = objElm || document;
+joker.dom.getChildrenByTagName = function(strTagName, opt_elm){
+	objElm = opt_elm || document;
 	var children = joker.dom.getChildren(objElm);
 	var arrResults = new Array();
 	for(var i = 0; i < children.length; i++){
@@ -158,12 +162,12 @@ joker.dom.getChildrenByTagName = function(strTagName, objElm){
 /*
 *在children中根据id来取元素
 *@param {String} strId:
-*@param {Elementlement} objElm:
+*@param {Elementlement} opt_elm:
 *@return {Element}
 *@time 2011.10.23
 */
-joker.dom.getChildById = function(strId, objElm){
-	objElm = objElm || document;
+joker.dom.getChildById = function(strId, opt_elm){
+	objElm = opt_elm || document;
 	var children = joker.dom.getChildren(objElm);
 	for(var i = 0; i < children.length; i++){
 		if(children[i].id == strId) return children[i];
@@ -205,31 +209,23 @@ joker.dom.getParentNode = function(node){
 	return node.parentNode;
 }
 
-/**
-  *删除一个子节点
-  *@param {Node} parent
-  *@param {Node} child
-  *@return {Node}
-  *@time 2011.11.01
-  */
-joker.dom.removeChild = function(parent,child){
-	return parent.removeChild(child);
-}
+
 
 /**
-* 获取元素的通用方法,对于不支持querySelectorAll()方法的浏览器，支持类似css2中的选择器：元素选择器，类选择器，id选择器，后代选择器，子元素选择器
-*对于支持querySelectorAll()的浏览器，调用此方法，将结果转换为数组后返回。此方法支持所有的css选择器。
+* 获取元素的通用方法,对于不支持querySelectorAll()方法的浏览器，支持类似css2中的选择器：元素选择器，类选择器，id选择器，后代选择器，子元素选择器.暂不支持其他选择器，因为不常用。
+*对于支持querySelectorAll()的浏览器，调用此方法，将结果转换为数组后返回。此方法支持所有的css2选择器。
+*注意返回的结果总是数组，即使只有一个结果,如果希望直接返回一个dom元素，可以使用g方法。
 *@param {String} strSelector :选择器表达式
 *@param {Element} objElm:目标元素
 *@return {Array}
 *@author axun;
 *@time 2011.10.23;
-*@example joker.dom.g(".header #title a"); joker.dom.g("body.container div#utity a"); joker.dom.g("div#course > span");
+*@example joker.dom.q(".header #title a"); joker.dom.q("body.container div#utity a"); joker.dom.q("div#course > span");
 */
 
-joker.dom.q = function(strSelector, objElm){
+joker.dom.q = function(strSelector, opt_elm){
 	var arrElements = new Array();
-	objElm = objElm || document;
+	objElm = opt_elm || document;
 	arrElements.push(objElm);
 	//先判断浏览器是否支持querySelectorAll(),如果是，则调用此方法
 	if(objElm.querySelectorAll) return objElm.querySelectorAll(strSelector);
@@ -310,6 +306,48 @@ joker.dom.q = function(strSelector, objElm){
 }
 
 /**
+  *此方法和q方法唯一的区别是：此方法只会返回第一个符合的结果，而忽略其他结果
+  **@param {String} strSelector :选择器表达式
+  *@param {Element} objElm:目标元素
+  *@return {Node}
+  *@author axun;
+  *@time 2011.10.23;
+  *@example joker.dom.g(".header #title a"); joker.dom.g("body.container div#utity a"); joker.dom.g("div#course > span");
+  *
+  */
+joker.dom.g = function(strSelector, opt_elm){
+	return joker.dom.q(strSelector, opt_elm)[0];
+}
+
+/**
+  *删除一个子节点,返回被删除的节点
+  *@param {Node} parent
+  *@param {Node} child
+  *@return {Node}
+  *@time 2011.11.01
+  */
+joker.dom.removeChild = function(parent,child){
+	return parent.removeChild(child);
+}
+
+/**
+  *清空一个节点的子节点,返回被删除的节点数组
+  *@param {Node} parent
+  *@return {Array<Node>}:被删除的节点 
+  *@time 2011.11.02
+  */
+joker.dom.removeChildren = function(parent){
+	var arrChildren = new Array();
+	var child = joker.dom.getFirstChild(parent);
+	while(child){
+		arrChildren.push(child);
+		joker.dom.removeChild(parent,child);
+		child = joker.dom.getFirstChild(parent);
+	}
+	return arrChildren;
+}
+
+/**
   *向元素子节点末尾追加一个孩子节点
   *@param {Node} parent:父元素
   *@param {Node} child:子元素
@@ -325,16 +363,49 @@ joker.dom.appendChild = function(parent, child){
   *@param {Array<Node>} children:
   *@time 2011.11.01
   */
-joker.dom.appendChildren = function(parent, arr_children){
-	for(var i = 0,length = arr_children.length; i < length; i++){
-		parent.appendChild(arr_children[i]);
+joker.dom.appendChildren = function(parent, arrChildren){
+	for(var i = 0,length = arrChildren.length; i < length; i++){
+		parent.appendChild(arrChildren[i]);
 	}
 }
 
 
+/**
+  *在父元素指定的子元素前追加一个子元素,返回被追加的元素,
+  *@param {Node} child:要追加的子元素
+  *@param {Node} parent:父元素
+  *@param {Node} targetChild:作为参照的子元素,如果不存在则追加到末尾
+  *@return {Node}
+  *@time 2011.11.02
+  */
+joker.dom.insertChildBefore = function(child, parent, opt_targetChild){
+	return parent.insertBefore(child, opt_targetChild);
+}
 
 
+/**
+  *在父元素的子元素中的指定位置前追加一个子元素，返回被添加的元素
+  *@param {Node} child:要添加的子元素
+  *@param {Node} parent:
+  *@param {Integer} opt_index:
+  *@return {Node}
+  *@time 2011.11.02
+  */
+joker.dom.insertChildBeforeIndex = function(child, parent, opt_index){
+	return joker.dom.insertChildBefore(child, parent, joker.dom.getChildren(parent)[opt_index]);
+}
 
+/**
+  *替换父节点中指定的子节点,返回替换后的节点,
+  *@param {Node} child:要替换的子元素
+  *@param {Node} parent:父元素
+  *@param {Node} targetChild:被替换的元素
+  *@return {Node}
+  *@time 2011.11.02
+  */
+joker.dom.replaceChild = function(child, parent, opt_targetChild){
+	return parent.replaceChild(child, opt_targetChild);
+}
 
 /*
 *********************************************************
@@ -353,7 +424,7 @@ joker.io = {};
 *@param	{function} callback:加载完成后执行的回调函数
 *@time 2011.10.22
 */
-joker.io.getjsonp = function(strUrl, callback){
+joker.io.getjsonp = function(strUrl, opt_callback){
 	var head = document.getElementsByTagName( "head" )[ 0 ] || document.documentElement,
 	script = document.createElement( "script" );
 	script.async = "async";
@@ -374,7 +445,7 @@ joker.io.getjsonp = function(strUrl, callback){
 	// Use insertBefore instead of appendChild to circumvent an IE6 bug.
 	// This arises when a base node is used (#2709 and #4378).
 	head.insertBefore( script, head.firstChild);
-	if(callback) callback(); 
+	if(opt_callback) opt_callback(); 
 }
 
 
@@ -388,6 +459,9 @@ joker.array = {};
 
 /**
   *将一个nodeList转换成数组
+  *@param {NodeList} nodes
+  *@return {Array<Node>}
+  *@time 2011.11.02
   */
 joker.array.nodeListToArray = function(nodes){
 	var arrResults = new Array();
