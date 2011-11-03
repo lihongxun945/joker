@@ -534,7 +534,8 @@ joker.json._seri = function(obj){
 
 /**
   *递归实现对json对象的序列化，调用私有函数_seri来实现。
-  *应该达到的效果是:对任意obj,serialize(parse(obj)) 和obj是完全一样的。
+  *递归实现对于包含大量数据的json对象可能存在性能上的问题。
+  *正确的serialize函数应该达到的效果是:对任意obj,serialize(parse(obj)) 和obj是完全一样的。
   *@param {Object} obj:
   *@return {String}
   *@time 2011.11.02
@@ -543,4 +544,86 @@ joker.json._seri = function(obj){
 
 joker.json.serialize = function(obj){
 	return joker.json._seri(obj);
+}
+
+/**
+  *cookie操作
+  *直接打开本地文件时是无法操作cookie的。
+  */
+//还没完全测试过，下次先测试这个
+joker.cookie = joker.cookie || {};
+
+/**
+  *默认的参数，如果用户不指定相应的参数，则使用默认的参数。
+  *
+  */
+joker.cookie._defaluts = {
+	expireHours : 24*30, //默认保存一个月
+	path : "/",//默认是根目录访问
+}
+
+/**
+  *获取本地cookie，并将其值存在对象属性中，返回一个对象
+  *@return {Object};
+  *@time 2011.11.03
+  *@author axun
+  */
+joker.cookie.getCookieObject = function(){
+	var cookieStr = document.cookie;
+	if(cookieStr == "") return {};	//没有取到cookie
+	var tokens = cookieStr.split(";");
+	var objCookie = {};
+	var name,value;
+	for(var i = 0, length = tokens.length; i < length; i++){
+		name = tokens[i].split("=")[0];
+		value = tokens[i].split("=")[1] || null;
+		objCookie[name] = value;
+	}
+	return objCookie;
+}
+
+
+/**
+  *根据name取得cookie
+  *@param {String} strName:名字
+  *@return {String}:值
+  *@time 2011.11.03
+  *@author axun
+  */
+joker.cookie.getCookie = function(strName){
+	var cookie = this.getCookieObject();
+	return cookie[strName];
+}
+
+/**
+  *设置一个cookie，如果不存在则添加，如果存在则改变其值
+  *@param {String} strName;
+  *@param {String} strValue
+  *@param {Number} opt_expireHours:有效时间，以小时计算
+  *@param {String} opt_path:可访问的路径
+  *@param {String} opt_domain:可访问的域
+  *@time 2011.11.03
+  *@author axun
+  */
+joker.cookie.setCookie = function(strName, strValue, opt_expireHours, opt_path, opt_domain){
+	var expireHours = opt_expireHourse || this._defaults.expireHours;
+	var path = opt_path || this._defaults.path;
+	var domain = opt_domain || null;
+	var cookieString = strName + "=" + encodeURIComponent(strValue);
+	var date = new Date();
+	date.setTime(date.getTime() + expireHours * 3600 * 1000);
+	cookieString += ";expires=" + date.toGMTString();
+	cookieString += ";path=" + path;
+	if(domain) cookieString += ";domain=" +domain;
+	document.cookie = cookieString;
+}	
+
+/**
+  *删除一个cookie
+  *@param {String} strName
+  *@time 2011.11.03
+  *@author axun
+  */
+joker.cookie.deleteCookie = function(strName){
+	this.setCookie(strName, "null", -1); 
 }
