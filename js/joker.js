@@ -12,9 +12,38 @@
 /*引入此文件后，会自动创建一个joker全局对象*/
 
 var joker={};
-
 /*
 *********************************************************
+********************** 基本方法 *************************
+**********************************************************
+*/
+
+
+
+/**
+  *实现继承。在父类构造函数有参数的时候，用此方法实现的继承，可以在子类构造函数中直接调用superClass(args)方法来调用父类的构造函数
+  *此方法实现的继承，可以用instanceof来测试子类和父类，都能正确的返回true
+  *@param {Function} childCons:子类构造函数
+  *@param {Function} parentCons:父类构造函数
+  *@time 2011.11.05
+  *@author axun
+  *@example:
+  *function Sup(name){this.name=name;}
+  *function Sub(name,age){this.superClass(name);this.age=age;}
+  *joker.inherit(Sub,Sup);
+  *var sub = new Sub("axun",123);
+  *sub instanceof Sub; //true
+  *sub instanceof Sup;//true
+  *sub.constructor;//Sub
+  */
+joker.inherit = function(childCons, parentCons){
+	childCons.prototype = parentCons.prototype;
+	childCons.prototype.superClass = parentCons;
+	childCons.prototype.constructor = childCons;//不指定的话，就是父类的而不是子类的
+}
+
+/*
+********************************************************
 ********************** dom 操作 *************************
 **********************************************************
 */
