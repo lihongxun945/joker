@@ -37,7 +37,7 @@ var joker={};
   *sub.constructor;//Sub
   */
 joker.inherit = function(childCons, parentCons){
-	childCons.prototype = parentCons.prototype;
+	childCons.prototype = new parentCons();
 	childCons.prototype.superClass = parentCons;
 	childCons.prototype.constructor = childCons;//不指定的话，就是父类的而不是子类的
 }
