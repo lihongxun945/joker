@@ -41,6 +41,31 @@ joker.inherit = function(childCons, parentCons){
 	childCons.prototype.superClass = parentCons;
 	childCons.prototype.constructor = childCons;//不指定的话，就是父类的而不是子类的
 }
+/*
+********************************************************
+********************** bom *************************
+**********************************************************
+*/
+
+joker.bom = {};
+
+/**
+  *获取由url传递的变量，返回一个对象，此对象的每一个属性对应一个url变量。
+  *@return {Object};
+  *@time 2011.11.06
+  */
+joker.bom.getURLArgs = function(){
+	var search = location.search;
+	if(!(search && search.length > 1)) return null;
+        var tokens = search.substring(1).split("&");
+	var result = {};
+	for(var i = 0, length = tokens.length; i < length; i++){
+		var items = tokens[i].split("=");
+		result[decodeURIComponent(items[0])] = decodeURIComponent(items[1]);
+	}	
+	return result;
+}
+
 
 /*
 ********************************************************
@@ -656,3 +681,4 @@ joker.cookie.setCookie = function(strName, strValue, opt_expireHours, opt_path, 
 joker.cookie.deleteCookie = function(strName){
 	this.setCookie(strName, "null", -1); 
 }
+
