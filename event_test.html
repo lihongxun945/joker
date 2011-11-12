@@ -1,0 +1,17 @@
+<script src = "js/joker.js"></script>
+<div id = "container">
+	<button id = "button1">button1</button>
+	<span id = "span1">span1</span>
+</div>
+<script>
+function log(m){
+	console.log(m);
+}
+joker.events.addListener(joker.dom.g("#container"), "click", function(){log("click container");}); 
+
+joker.events.addListener(joker.dom.g("#button1"), "click", function(e){log("click button1");e.preventDefault();}); 
+
+joker.events.addListener(joker.dom.g("#span1"), "mousedown", function(e){log("mousedown span1");e.preventDefault();}); 
+
+joker.events.addListener(joker.dom.g("#span1"), "mousedown", function(e){log("mousedown span1");e.preventDefault();}); 
+</script>

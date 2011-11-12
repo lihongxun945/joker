@@ -14,22 +14,28 @@
 var joker={};
 /*
 *********************************************************
-********************** 基本方法 *************************
+********************** base  *************************
 **********************************************************
 */
 
 
 
 /**
-  *实现继承。在父类构造函数有参数的时候，用此方法实现的继承，可以在子类构造函数中直接调用superClass(args)方法来调用父类的构造函数
-  *此方法实现的继承，可以用instanceof来测试子类和父类，都能正确的返回true
+  *实现继承。在父类构造函数有参数的时候，用此方法实现的继承，可以在子类构造
+  *函数中直接调用super(args)方法来调用父类的构造函数
+  *此实现方法的原理是：自动将child的prototype指向parent的protoype，使子类
+  *拥有父类的全部方法。但是，父类属性必须通过在子类的构造函数中调用
+  *this.super函数来添加到子类，否则子类中没有父类的属性
+  *如果不需要父类中的属性，而只需要其prototype中定义的方法，可以不用调用super
+  *此方法实现的继承，可以用instanceof和constructor来测试子类和父类，都能正确的返回true
+  *注意：inherit声明必须紧跟在子类的构造函数之后，在声明之前的子类中添加的prototype中的方法会被丢掉。
   *@param {Function} childCons:子类构造函数
   *@param {Function} parentCons:父类构造函数
   *@time 2011.11.05
   *@author axun
   *@example:
   *function Sup(name){this.name=name;}
-  *function Sub(name,age){this.superClass(name);this.age=age;}
+  *function Sub(name,age){this.super(name);this.age=age;}
   *joker.inherit(Sub,Sup);
   *var sub = new Sub("axun",123);
   *sub instanceof Sub; //true
@@ -37,9 +43,55 @@ var joker={};
   *sub.constructor;//Sub
   */
 joker.inherit = function(childCons, parentCons){
-	childCons.prototype = new parentCons();
-	childCons.prototype.superClass = parentCons;
+	childCons.prototype = parentCons.prototype;
+	childCons.prototype.superClass_ = parentCons;
+	childCons.prototype.super = function(){
+		parentCons.apply(this, arguments);
+	}
 	childCons.prototype.constructor = childCons;//不指定的话，就是父类的而不是子类的
+}
+
+/**
+  *对比goog的实现
+  *
+  */
+joker.goog_inherit = function(childCtor, parentCtor){
+	function tempCtor() {};
+	tempCtor.prototype = parentCtor.prototype;
+	childCtor.superClass_ = parentCtor.prototype;
+	childCtor.prototype = new tempCtor();
+	childCtor.prototype.constructor = childCtor;
+}
+
+
+/**
+  *数组实现的队列
+  *从队尾压入元素，从队首弹出元素
+  *@time 2011.11.12
+  *
+  */
+joker.Queue = function(){
+	this.queue = new Array();
+}
+
+joker.Queue.prototype.clear = function(){
+	this.queue = new Array();
+}
+
+joker.Queue.prototype.push = function(obj){
+	return this.queue.push(obj);
+
+}
+joker.Queue.prototype.pop = function(){
+	return this.queue.shift();
+}
+joker.Queue.prototype.remove = function(obj){
+	for(var i = 0, length = this.queue.length; i < length; i++){
+		if(this.queue[i] == obj) this.queue.splice(i,1);
+	}
+}
+joker.Queue.prototype.getArray= function(){
+	return this.queue;
 }
 /*
 ********************************************************
@@ -682,3 +734,93 @@ joker.cookie.deleteCookie = function(strName){
 	this.setCookie(strName, "null", -1); 
 }
 
+
+
+/*
+********************************************************
+********************** 事件处理 *************************
+**********************************************************
+*/
+/**
+  *把事件分为两种基本类型：dom事件 和 自定义事件。
+  *dom事件的触发是由浏览器来完成的，需要浏览器的支持,事件类型是固定的。
+  *而自定义事件，是由代码触发的，可以自定义任意类型的事件.
+  *
+  */
+
+/**
+  *dom事件类型
+  *@time 2011.11.12
+  */
+joker.events = joker.events || {};
+joker.events.EventType = {
+	CLICK : "click",
+	DBCLICK : "dbclick",
+	MOUSEDOWN : "mousedown",
+	MOUSEOUT : "mouseout",
+	MOUSEUP : "mouseup",
+	MOUSEOVER : "mouseover",
+	MOUSEMOVE : "mousemove",
+	
+	KEYUP : "keyup",
+	KEYDOWN : "keydown",
+	KEYPRESS : "keypress",
+
+	LOAD : "load",
+	UNLOAD : "unload",
+}
+
+/**
+  *添加事件监听.
+  *@param {Node} element:
+  *@param {String} type:
+  *@param {Function} handler:
+  *@time 2011.11.12
+  *@ref 《JavaScript 高级程序设计（第二版）》p290
+  */
+joker.events.addListener = function(element, type, handler){
+	if(!element) return;
+	if(element.addEventListener){
+		//对于非ie浏览器
+		element.addEventListener(type, handler, false);
+	}else if(element.attachEvent){
+		//对于ie浏览器
+		element.attachEvent("on" + type, handler);
+	}else {
+		//对于不支持dom2事件的浏览器
+		element["on" + type] = handler;
+	}
+
+}
+
+/**
+  *移除事件监听.
+  *@param {Node} element:
+  *@param {String} type:
+  *@param {Function} handler:
+  *@time 2011.11.12
+  *@ref 《JavaScript 高级程序设计（第二版）》p290
+  */
+joker.events.removeListener = function(element, type, handler){
+	if(element.removeEventListener){
+		element.removeEventListener(type, handler, false);
+	}else if(element.detachEvent){
+		element.detachEvent("on"+type, handler);
+	}else {
+		element["on" + type] = null;
+	}
+}
+
+/**
+  *将event对象转换成标准化的event对象，其拥有e.target,e.preventDefault,e.stopPropagation方法
+  *@param {Object} e
+  *@return {Object}
+  *@ref 《javascript 高级程序设计（第二版）》p295
+  */
+joker.events.getEvent = function(e){
+	e = e || window.event;
+	e.target = e.target || e.srcElement;
+	e.preventDefault = e.preventDefault || function(){e.returnValue = false;};
+	e.stopPropagation = e.stopPropagation || function(){e.cancelBubble = true;};
+	return e;
+}
