@@ -32,7 +32,6 @@ var joker={};
   *@param {Function} childCons:子类构造函数
   *@param {Function} parentCons:父类构造函数
   *@time 2011.11.05
-  *@author axun
   *@example:
   *function Sup(name){this.name=name;}
   *function Sub(name,age){this.super(name);this.age=age;}
@@ -43,9 +42,12 @@ var joker={};
   *sub.constructor;//Sub
   */
 joker.inherit = function(childCons, parentCons){
-	childCons.prototype = parentCons.prototype;
-	childCons.prototype.superClass_ = parentCons;
+	function tempCons(){}
+	tempCons.prototype = parentCons.prototype;
+	childCons.prototype = new tempCons();
+	childCons.superClass_ = parentCons;
 	childCons.prototype.super = function(){
+		//在goog基础上的改进，增加一个super方法，在子类的构造函数中可以用this.super来调用父类的构造函数，将父类的属性添加到子类上。注意不能添加到子类的__proto__上，因为__proto__是所有子类共享，而属性不应该是被共享的。
 		parentCons.apply(this, arguments);
 	}
 	childCons.prototype.constructor = childCons;//不指定的话，就是父类的而不是子类的
@@ -60,7 +62,6 @@ joker.goog_inherit = function(childCtor, parentCtor){
 	tempCtor.prototype = parentCtor.prototype;
 	childCtor.superClass_ = parentCtor.prototype;
 	childCtor.prototype = new tempCtor();
-	childCtor.prototype.constructor = childCtor;
 }
 
 

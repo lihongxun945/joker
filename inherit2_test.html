@@ -16,11 +16,10 @@ SupClass.prototype.sayNum= function(){
 	log("my num is:"+this.num);
 }
 var SubClass = function(name,age){
-	this.super(name);
 	this.age = age;
 }
 
-joker.inherit(SubClass, SupClass);
+joker.goog_inherit(SubClass, SupClass);
 
 SubClass.prototype.sayAge= function(){
 	log("my age is:"+this.age);
