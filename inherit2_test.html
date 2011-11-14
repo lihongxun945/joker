@@ -15,7 +15,8 @@ SupClass.prototype.sayName = function(){
 SupClass.prototype.sayNum= function(){
 	log("my num is:"+this.num);
 }
-var SubClass = function(name,age){
+var SubClass = function(name, age){
+	SupClass.call(this, name);
 	this.age = age;
 }
 

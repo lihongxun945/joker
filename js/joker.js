@@ -62,6 +62,7 @@ joker.goog_inherit = function(childCtor, parentCtor){
 	tempCtor.prototype = parentCtor.prototype;
 	childCtor.superClass_ = parentCtor.prototype;
 	childCtor.prototype = new tempCtor();
+	childCtor.prototype.constructor = childCtor;//不指定的话，就是父类的而不是子类的
 }
 
 
