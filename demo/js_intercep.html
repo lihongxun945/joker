@@ -1,0 +1,76 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<script>
+</script>
+<script>
+function bind(fn, selfObj, var_args) {
+    if (!fn) {
+        throw new Error();
+    }
+
+    if (arguments.length > 2) {
+        var boundArgs = Array.prototype.slice.call(arguments, 2);
+        return function() {
+            // Prepend the bound arguments to the current arguments.
+            var newArgs = Array.prototype.slice.call(arguments);
+            Array.prototype.unshift.apply(newArgs, boundArgs);
+            return fn.apply(selfObj, newArgs);
+        };
+
+    } else {
+        return function() {
+            return fn.apply(selfObj, arguments);
+        };
+    }
+};
+function log(m){
+    console.log(m);
+}
+/*rewrite ajax*/
+function XML(){
+    this.xml = new XMLHttpRequest();
+    this.url = "http://www.baidu.com?url=";
+}
+XML.prototype.open = function(m, u, a){
+    this.xml.onreadystatechange = bind(this.onreadystatechange, this.xml);
+    log("发送ajax请求：" + u);
+    log("被重定向到：" + this.url + encodeURIComponent(u)); 
+    this.xml.open(m, this.url + encodeURIComponent(u), a);
+}
+XML.prototype.onchange = function(){
+    this.readyState = this.xml.readyState;
+    this.status = this.xml.status;
+    this.responseJson = this.responseJson;
+    console.log(this.responseJson);
+    this.onreadystatechange();
+}
+XML.prototype.send = function(){
+    this.xml.send();
+}
+
+/*end*/
+
+function sendMessage(){
+    var xml = new XML();
+    xml.onreadystatechange=function()
+    {
+        if (xml.readyState==4 && xml.status==200)
+        {
+            log("返回结果：" + xml.responseText);
+        }
+    }
+    xml.open("get", "http://www.baidu.com", true);
+    xml.send();
+}
+</script>
+
+</head>
+<body>
+
+<button onclick="sendMessage()">ajax baidu.com</button>
+
+<iframe id="f">
+</iframe>
+</body>
+</html>
