@@ -33,16 +33,69 @@ Tank.TankClient.prototype.init = function(){
     this.canvas_.fillStyle = "rgb(255, 0, 0)";
     this.canvas_.fillText("" +
             "按键说明： 方向键移动，A 发射子弹，P暂停游戏，" +
-            "按空格开始游戏,。" +
             "未完，待续>>" +
             "", 100, 250);
 	this.canvas_.fillText("" +
 		"声明：所有图片均来自网络。" +
-		"", 100, 300);
+		"", 100, 500);
     this.canvas_.fillStyle = lastStyle;
-
+	this.loadImg();
 }
-Tank.TankClient.prototype.enterDocument = function(){
+Tank.TankClient.imgsLoadedCount_ = 0;
+Tank.TankClient.imgsPreload_ = new goog.structs.Map();	//需要预加载的图片
+//预加载图片，加载完成后才能开始游戏
+Tank.TankClient.prototype.loadImg = function(){
+	var imgLoader = new goog.net.ImageLoader();
+	var imgs = Tank.TankClient.imgsPreload_;
+	imgs.set("firing.png", "img/firing.png");
+	imgs.set("firing2.png", "img/firing2.png");
+	imgs.set("standing.png", "img/standing.png");
+	imgs.set("walking.png", "img/walking.png");
+	imgs.set("zombie-attack.png", "img/zombie-attack.png");
+	imgs.set("zombie-stand.png", "img/zombie-stand.png");
+	imgs.set("zombie-walking.png", "img/zombie-walking.png");
+	imgs.set("zombie2-attack.png", "img/zombie2-attack.png");
+	imgs.set("zombie2-stand.png", "img/zombie2-stand.png");
+	imgs.set("zombie2-walking.png", "img/zombie2-walking.png");
+	imgs.set("treea1.png", "img/walls/treea1.png");
+	imgs.set("treea2.png", "img/walls/treea2.png");
+	imgs.set("treeb1.png", "img/walls/treeb1.png");
+	imgs.set("treeb2.png", "img/walls/treeb2.png");
+	imgs.set("rocka1.png", "img/walls/rocka1.png");
+	imgs.set("rocka2.png", "img/walls/rocka2.png");
+	imgs.set("rockb1.png", "img/walls/rockb1.png");
+	imgs.set("rockb2.png", "img/walls/rockb2.png");
+	imgs.set("bullet.png", "img/bullets/bullet.png");
+	imgs.set("10.gif", "img/bullets/10.gif");
+	
+	var keys = imgs.getKeys();
+    for (var i = 0; i < keys.length; i++) {
+      imgLoader.addImage(keys[i], imgs.get(keys[i]));
+    }
+	
+	var TEST_EVENT_TYPES = [
+		goog.events.EventType.LOAD,
+		goog.net.EventType.COMPLETE,
+		goog.net.EventType.ERROR
+	];
+	this.getHandler().listen(imgLoader, TEST_EVENT_TYPES,
+        this.handleImageLoaderEvent);
+	
+	imgLoader.start();
+}
+
+Tank.TankClient.prototype.handleImageLoaderEvent = function(e){
+	var count = ++ Tank.TankClient.imgsLoadedCount_;
+	this.canvas_.fillStyle = "rgb(255, 255, 0)";
+    this.canvas_.fillRect(100, 260, 600, 100);
+	this.canvas_.fillStyle = "rgb(255, 0, 0)";
+	this.canvas_.fillText("正在加载图片，网速较慢请稍后…… " + parseInt(count / Tank.TankClient.imgsPreload_.getKeys().length * 100) + "%", 100, 300);
+	if(count >= Tank.TankClient.imgsPreload_.getKeys().length) {
+		this.canvas_.fillText("ok！按空格键开始游戏！", 100, 350);
+		this.afterImgLoaded();
+	}
+}
+Tank.TankClient.prototype.afterImgLoaded = function(){
     this.getHandler().listen(Tank.timer_, goog.Timer.TICK, this.act);
     this.getHandler().listen(Tank.listenBody_, goog.events.EventType.KEYDOWN, this.onKeyDown);
     this.getHandler().listen(Tank.listenBody_, goog.events.EventType.KEYUP, this.onKeyUp);
@@ -79,8 +132,10 @@ Tank.TankClient.prototype.pause = function(){
         Tank.status_ = "pause";
         var lastStyle = this.canvas_.fillStyle;
         this.canvas_.fillStyle = "rgb(255, 0, 0)";
+        this.canvas_.font = "30pt";
         this.canvas_.fillText("PAUSE", 100, 90);
         this.canvas_.fillStyle = lastStyle;
+        this.canvas_.font = "12pt";
     }else if(Tank.status_ == "pause"){
         Tank.timer_.start();
         Tank.status_ = "run";
@@ -232,20 +287,38 @@ Tank.MapManager.parseMap = function(map){
     }
 
 
-    this.sceneManager_.push(new Tank.Plaster(new Tank.Point(200, 0)));
+    this.sceneManager_.push(new Tank.Plaster(new Tank.Point(200, 300)));
     this.sceneManager_.push(new Tank.Equip0(new Tank.Point(300, 300)));
-    this.sceneManager_.push(new Tank.Equip1(new Tank.Point(350, 150)));
-    this.sceneManager_.push(new Tank.Equip2(new Tank.Point(400, 150)));
-    this.sceneManager_.push(new Tank.Equip3(new Tank.Point(450, 150)));
-    this.sceneManager_.push(new Tank.Equip4(new Tank.Point(500, 150)));
+    this.sceneManager_.push(new Tank.Equip1(new Tank.Point(350, 50)));
+    this.sceneManager_.push(new Tank.Equip2(new Tank.Point(400, 50)));
+    this.sceneManager_.push(new Tank.Equip3(new Tank.Point(450, 50)));
+    this.sceneManager_.push(new Tank.Equip4(new Tank.Point(500, 50)));
 
-    for(var i = 0; i < 0; i ++){
+    for(var i = 0; i < 4; i ++){
         this.sceneManager_.push(new Tank.RandomTank(new Tank.Point(0,0)));
         this.sceneManager_.push(new Tank.Zombie(new Tank.Point(200,0)));
         this.sceneManager_.push(new Tank.Zombie2(new Tank.Point(400,0)));
     }
+	
+	/*var objs = map.objs;
+	for(var i in objs){
+		var obj = objs[i];
+		this.createObj(obj);
+	}*/
+	
 }
-
+Tank.MapManager.createObj = function(obj){
+	var push = this.sceneManager_.push;
+	if(!(obj.type && obj.loc)) return;
+	switch(obj.type){
+		case("Zombie"):
+			push(new Tank.Zombie(obj.loc));
+		case("Zombie2"):
+			push(new Tank.Zombie2(obj.loc));
+		case("RandomTank"):
+			push(new Tank.RandomTank(obj.loc));
+	}
+}
 /**************控制面板**********/
 Tank.Panel = {};
 Tank.Panel.panel_ = null;

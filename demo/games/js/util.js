@@ -27,6 +27,7 @@ Tank.center = function(a, b ){
     b.loc_.x = a.loc_.x + a.size_.x/2 - b.size_.x/2;
     b.loc_.y = a.loc_.y + a.size_.y/2 - b.size_.y/2;
 }
+//创建一张图片
 Tank.createImg = function(src, x, y, w, h){
     var img = new Image();
     img.src = src;
@@ -39,10 +40,33 @@ Tank.createImg = function(src, x, y, w, h){
 	}
     return img;
 }
-Tank.createImgs = function(src, x, y, w, h, mount, length){
+//创建一行图片
+Tank.createImgs = function(src, x, y, w, h, mount, length, opt_rotate){
 	var result = [];
+    var rotate = opt_rotate || 0;
 	for(var i = 0; i < mount; i++){
-		result.push(Tank.createImg(src, x + i*length, y, w, h));
+        var j = (i + rotate) % mount;
+		result.push(Tank.createImg(src, x + j*length, y, w, h));
+	}
+	return result;
+}
+//创建一列图片
+Tank.createImgsY = function(src, x, y, w, h, mount, length, opt_rotate){
+	var result = [];
+    var rotate = opt_rotate || 0;
+	for(var i = 0; i < mount; i++){
+        var j = (i + rotate) % mount;
+		result.push(Tank.createImg(src,x,  y + j*length, w, h));
+	}
+	return result;
+}
+//创建图矩阵
+Tank.createImgsMatrix = function(src, x, y, w, h, mount_x, length_x, mount_y, length_y, opt_rotate){
+    var rotate = opt_rotate || 0;
+	var result = [];
+	for(var i = 0; i < mount_y; i++){
+        var j = (i + rotate) % mount_y;
+		result.push(Tank.createImgs(src, x, y+ j*length_y, w, h, mount_x, length_x));
 	}
 	return result;
 }
@@ -67,14 +91,14 @@ Tank.getDirect = function(a, b){
 		if(t < Math.atan(Math.PI/8)) return 2;
 		if(t > Math.atan(Math.PI/8 * 3)) return 4;
 		else return 3;
-	}else if(p.x < 0 && p.y < 0){
+	}else if(p.x <= 0 && p.y < 0){
 		p.y = -1 * p.y;
 		p.x = -1 * p.x;
 		var t = Math.atan(p.x/p.y);
 		if(t < Math.atan(Math.PI/8)) return 4;
 		if(t > Math.atan(Math.PI/8 * 3)) return 6;
 		else return 5;
-	}else if(p.x < 0 && p.y > 0){
+	}else if(p.x < 0 && p.y >= 0){
 		p.x = -1 * p.x;
 		var t = Math.atan(p.y/p.x);
 		if(t < Math.atan(Math.PI/8)) return 6;
@@ -89,6 +113,11 @@ Tank.getDirect = function(a, b){
 Tank.inArray = function (elm, arr){
 	for(var i in arr) if(arr[i] == elm) return true;
 	return false;
+}
+//把数组中的每一项包装成一个数组
+Tank.wrapArray = function(arr){
+    for(var i in arr) arr[i] = [arr[i]];
+    return arr;
 }
 
 //基于网格的A*寻路算法, f=g+h

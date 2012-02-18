@@ -128,24 +128,34 @@ Tank.Equip4.prototype.harm = function(num, obj){
 }
 
 /**自定义形状的子弹****/
+//子弹8个方向上是一样的，只需要旋转一下图片即可
 //火焰子弹
-Tank.FireBullet = function(camp, power, direc, loc, speed, range){
-	Tank.FireBullet.superClass_.constructor.call(this, camp, power, direc, loc, speed, range);
-	var imgsU = [Tank.createImg("img/2.gif"),Tank.createImg("img/3.gif")];
-    var imgsRU = [Tank.createImg("img/2.gif"),Tank.createImg("img/3.gif")];
-    var imgsR = [Tank.createImg("img/2.gif"),Tank.createImg("img/3.gif")];
-    var imgsRD = [Tank.createImg("img/2.gif"),Tank.createImg("img/3.gif")];
-    var imgsD = [Tank.createImg("img/2.gif"),Tank.createImg("img/3.gif")];
-    var imgsLD = [Tank.createImg("img/2.gif"),Tank.createImg("img/3.gif")];
-    var imgsL = [Tank.createImg("img/2.gif"),Tank.createImg("img/3.gif")];
-    var imgsLU = [Tank.createImg("img/2.gif"),Tank.createImg("img/3.gif")];
+Tank.FireBullet = function(owner, power, direc, loc, speed, range){
+	Tank.FireBullet.superClass_.constructor.call(this, owner, power, direc, loc, speed, range);
+	var imgsU = [Tank.createImg("img/bullets/bullets.png", 190, 0, 33, 33)];
     this.imgsWalking_ = [];
-    this.imgsWalking_.push(imgsU,imgsRU, imgsR, imgsRD, imgsD, imgsLD, imgsL, imgsLU);
+    for(var i = 0; i < 8; i++)
+        this.imgsWalking_.push(imgsU);
 	this.imgsAll_ = this.imgsWalking_;
-	this.size_ = new Tank.Point(15,15);
-	this.moveSpeed_ = 8;
+	this.size_ = new Tank.Point(33,33);
+    this.rotate_ = 4;
 }
 goog.inherits(Tank.FireBullet, Tank.Bullet);
+
+//火焰子弹,绿色红色闪光
+Tank.GreenFireBullet = function(owner, power, direc, loc, speed, range){
+	Tank.GreenFireBullet.superClass_.constructor.call(this, owner, power, direc, loc, speed, range);
+	var imgsU = [Tank.createImg("img/bullets/bullets.png", 350, 0, 33, 33), Tank.createImg("img/bullets/bullets.png", 190, 0, 33, 33)];
+    this.imgsWalking_ = [];
+    for(var i = 0; i < 8; i++)
+        this.imgsWalking_.push(imgsU);
+	this.imgsAll_ = this.imgsWalking_;
+	this.size_ = new Tank.Point(33,33);
+    this.rotate_ = 4;
+    this.moveSpeed_ = 5;
+}
+goog.inherits(Tank.GreenFireBullet, Tank.Bullet);
+
 
 /****************8自定义tree形状*******************/
 Tank.Tree2 = function(loc){
@@ -170,6 +180,7 @@ Tank.Emplacement = function(loc){
 	this.fireRange_ = 300;
 	this.bulletPower_ = 30;
     this.ais_.push(new Tank.AutoFireAI(this));
+	this.ais_.push(new Tank.AutoTalkAI(this, [], null, ["守着宝箱", "我是个守卫", "敢来就灭了你"]));	//会说话
 }
 goog.inherits(Tank.Emplacement, Tank.FireMovable);
 
@@ -189,6 +200,7 @@ Tank.RandomTank = function(loc){
     this.ais_.push(new Tank.RandomMoveAI(this));
     this.ais_.push(new Tank.RandomFireAI(this));
 	this.ais_.push(new Tank.AutoFireAI(this));	//默认是会自动攻击的
+	this.ais_.push(new Tank.AutoTalkAI(this, null, null, ["我俩长的真像","我是好人，不是怪物", "看我的AK爆头"]));	//会说话
 }
 goog.inherits(Tank.RandomTank, Tank.FireMovable);
 Tank.RandomTank.prototype.die = function(){
@@ -207,57 +219,28 @@ Tank.Zombie = function(loc){
     this.camp_ = 2;
     this.showBloodBar_ = true;
     this.isBarrier4Bullet_ = true;
-    this.hp_ = this.hpLimit_ = 100;
+    this.hp_ = this.hpLimit_ = 200;
 
 	this.fireRange_ = 200;	
-	this.Bullet_ = Tank.FireBullet;
+    this.Bullet_ = Tank.FireBullet;
 	this.bulletPower_ = 20;
-	{
-		var imgsU = Tank.createImgs("img/Zombie-walking.png", 20, 20, 60, 60, 8, 96);
-		var imgsRU = Tank.createImgs("img/Zombie-walking.png", 20, 116, 60, 60, 8, 96);
-		var imgsR = Tank.createImgs("img/Zombie-walking.png", 20, 212, 60, 60, 8, 96);
-		var imgsRD = Tank.createImgs("img/Zombie-walking.png", 20, 308, 60, 60, 8, 96);
-		var imgsD = Tank.createImgs("img/Zombie-walking.png", 20, 404, 60, 60, 8, 96);
-		var imgsLD = Tank.createImgs("img/Zombie-walking.png", 20, 500, 60, 60, 8, 96);
-		var imgsL = Tank.createImgs("img/Zombie-walking.png", 20, 596, 60, 60, 8, 96);
-		var imgsLU = Tank.createImgs("img/Zombie-walking.png", 20, 692, 60, 60, 8, 96);
-		this.imgsWalking_ = [];	//移动时的动画
-		this.imgsWalking_.push(imgsU,imgsRU, imgsR, imgsRD, imgsD, imgsLD, imgsL, imgsLU);
-	}
-	{
-		var imgsD = [Tank.createImg("img/Zombie-stand.png", 20, 20, 60, 60)];
-		var imgsLD = [Tank.createImg("img/Zombie-stand.png",20, 116, 60, 60)];
-		var imgsL = [Tank.createImg("img/Zombie-stand.png", 20, 212, 60, 60)];
-		var imgsLU = [Tank.createImg("img/Zombie-stand.png", 20, 308, 60, 60)];
-		var imgsU = [Tank.createImg("img/Zombie-stand.png", 20, 404, 60, 60)];
-		var imgsRU = [Tank.createImg("img/Zombie-stand.png", 20, 500, 60, 60)];
-		var imgsR = [Tank.createImg("img/Zombie-stand.png", 20, 596, 60, 60)];
-		var imgsRD = [Tank.createImg("img/Zombie-stand.png", 20, 692, 60, 60)];
-		this.imgsStand_ = [];	//停止不动时的动画
-		this.imgsStand_.push(imgsU,imgsRU, imgsR, imgsRD, imgsD, imgsLD, imgsL, imgsLU);
-	}
+    this.imgsWalking_ = Tank.createImgsMatrix("img/zombie-walking.png", 20, 20, 60, 60, 8, 96, 8,  96);
+    this.imgsStand_= Tank.createImgsMatrix("img/zombie-stand.png", 20, 20, 60, 60, 1, 0, 8, 96, 4);
+
 	this.imgsAll_ = this.imgsStand_;
 		
-	var imgsU = Tank.createImgs("img/Zombie-attack.png", 20, 20, 60, 60, 10, 96);
-	var imgsRU = Tank.createImgs("img/Zombie-attack.png", 20, 116, 60, 60, 10, 96);
-	var imgsR = Tank.createImgs("img/Zombie-attack.png", 20, 212, 60, 60, 10, 96);
-	var imgsRD = Tank.createImgs("img/Zombie-attack.png", 20, 308, 60, 60, 10, 96);
-	var imgsD = Tank.createImgs("img/Zombie-attack.png", 20, 404, 60, 60, 10, 96);
-	var imgsLD = Tank.createImgs("img/Zombie-attack.png", 20, 500, 60, 60, 10, 96);
-	var imgsL = Tank.createImgs("img/Zombie-attack.png", 20, 596, 60, 60, 10, 96);
-	var imgsLU = Tank.createImgs("img/Zombie-attack.png", 20, 692, 60, 60, 10, 96);
-	this.imgsMoveFiring_ = [];
-	this.imgsMoveFiring_.push(imgsU,imgsRU, imgsR, imgsRD, imgsD, imgsLD, imgsL, imgsLU);
+	this.imgsMoveFiring_ = Tank.createImgsMatrix("img/zombie-attack.png", 20, 20, 60, 60, 10, 96, 8, 96);
 
 	this.imgsStandFiring_ = this.imgsMoveFiring_;
 	
 	this.ais_.push(new Tank.RandomMoveAI(this));
     this.ais_.push(new Tank.RandomFireAI(this));
 	this.ais_.push(new Tank.AutoFireAI(this));	//默认是会自动攻击的
+	this.ais_.push(new Tank.AutoTalkAI(this));	//会说话
 }
 goog.inherits(Tank.Zombie, Tank.FireMovable);
 
-//近战的单位
+//
 Tank.Zombie2 = function(loc){
 	Tank.Zombie2.superClass_.constructor.call(this);
     this.loc_ = new Tank.Point(loc);
@@ -267,47 +250,21 @@ Tank.Zombie2 = function(loc){
     this.camp_ = 2;
     this.showBloodBar_ = true;
     this.isBarrier4Bullet_ = true;
-    this.hp_ = this.hpLimit_ = 100;
-	this.fireRange_ = 80;	//近战单位
+    this.hp_ = this.hpLimit_ = 300;
+	this.fireRange_ = 200;	//
+    this.fireSpeed_ = 15; 
 
+	this.bulletPower_ = 50;
+    this.Bullet_ = Tank.GreenFireBullet;
 
-	{
-		var imgsU = Tank.createImgs("img/Zombie2-walking.png", 20, 20, 60, 60, 8, 96);
-		var imgsRU = Tank.createImgs("img/Zombie2-walking.png", 20, 116, 60, 60, 8, 96);
-		var imgsR = Tank.createImgs("img/Zombie2-walking.png", 20, 212, 60, 60, 8, 96);
-		var imgsRD = Tank.createImgs("img/Zombie2-walking.png", 20, 308, 60, 60, 8, 96);
-		var imgsD = Tank.createImgs("img/Zombie2-walking.png", 20, 404, 60, 60, 8, 96);
-		var imgsLD = Tank.createImgs("img/Zombie2-walking.png", 20, 500, 60, 60, 8, 96);
-		var imgsL = Tank.createImgs("img/Zombie2-walking.png", 20, 596, 60, 60, 8, 96);
-		var imgsLU = Tank.createImgs("img/Zombie2-walking.png", 20, 692, 60, 60, 8, 96);
-		this.imgsWalking_ = [];	//移动时的动画
-		this.imgsWalking_.push(imgsU,imgsRU, imgsR, imgsRD, imgsD, imgsLD, imgsL, imgsLU);
-	}
-	{
-		var imgsD = [Tank.createImg("img/Zombie2-stand.png", 20, 20, 60, 60)];
-		var imgsLD = [Tank.createImg("img/Zombie2-stand.png",20, 116, 60, 60)];
-		var imgsL = [Tank.createImg("img/Zombie2-stand.png", 20, 212, 60, 60)];
-		var imgsLU = [Tank.createImg("img/Zombie2-stand.png", 20, 308, 60, 60)];
-		var imgsU = [Tank.createImg("img/Zombie2-stand.png", 20, 404, 60, 60)];
-		var imgsRU = [Tank.createImg("img/Zombie2-stand.png", 20, 500, 60, 60)];
-		var imgsR = [Tank.createImg("img/Zombie2-stand.png", 20, 596, 60, 60)];
-		var imgsRD = [Tank.createImg("img/Zombie2-stand.png", 20, 692, 60, 60)];
-		this.imgsStand_ = [];	//停止不动时的动画
-		this.imgsStand_.push(imgsU,imgsRU, imgsR, imgsRD, imgsD, imgsLD, imgsL, imgsLU);
-	}
+    this.imgsWalking_ = Tank.createImgsMatrix("img/zombie2-walking.png", 20, 20, 60, 60, 8, 96, 8,  96);
+    this.imgsStand_= Tank.createImgsMatrix("img/zombie2-stand.png", 20, 20, 60, 60, 1, 0, 8, 96, 4);
+
 	this.imgsAll_ = this.imgsStand_;
 		
-	var imgsU = Tank.createImgs("img/Zombie2-attack.png", 20, 20, 60, 60, 10, 96);
-	var imgsRU = Tank.createImgs("img/Zombie2-attack.png", 20, 116, 60, 60, 10, 96);
-	var imgsR = Tank.createImgs("img/Zombie2-attack.png", 20, 212, 60, 60, 10, 96);
-	var imgsRD = Tank.createImgs("img/Zombie2-attack.png", 20, 308, 60, 60, 10, 96);
-	var imgsD = Tank.createImgs("img/Zombie2-attack.png", 20, 404, 60, 60, 10, 96);
-	var imgsLD = Tank.createImgs("img/Zombie2-attack.png", 20, 500, 60, 60, 10, 96);
-	var imgsL = Tank.createImgs("img/Zombie2-attack.png", 20, 596, 60, 60, 10, 96);
-	var imgsLU = Tank.createImgs("img/Zombie2-attack.png", 20, 692, 60, 60, 10, 96);
-	this.imgsMoveFiring_ = [];
-	this.imgsMoveFiring_.push(imgsU,imgsRU, imgsR, imgsRD, imgsD, imgsLD, imgsL, imgsLU);
+	this.imgsMoveFiring_ = Tank.createImgsMatrix("img/zombie2-attack.png", 20, 20, 60, 60, 10, 96, 8, 96);
 
+    
 	this.imgsStandFiring_ = this.imgsMoveFiring_;
 	
 	this.ais_.push(new Tank.RandomMoveAI(this));
@@ -326,29 +283,13 @@ Tank.MainTank = function(){
     this.protect_ = 1;
     this.loc_ = new Tank.Point(200, 550);
     this.ais_.push(new Tank.KeyAI(this));
-    this.bulletPower_  = 200;
+    this.bulletPower_  = 30;
+    this.Bullet_ = Tank.Magic;
 	
-	var imgsD = Tank.createImgs("img/firing.png", 52, 52, 90, 90, 8, 133);
-	var imgsLD = Tank.createImgs("img/firing.png", 52, 164, 90, 90, 8, 133);
-	var imgsL = Tank.createImgs("img/firing.png", 52, 276, 90, 90, 8, 133);
-	var imgsLU = Tank.createImgs("img/firing.png", 52, 388, 90, 90, 8, 133);
-	var imgsU = Tank.createImgs("img/firing.png", 52, 500, 90, 90, 8, 133);
-	var imgsRU = Tank.createImgs("img/firing.png", 52, 612, 90, 90, 8, 133);
-	var imgsR = Tank.createImgs("img/firing.png", 52, 724, 90, 90, 8, 133);
-	var imgsRD = Tank.createImgs("img/firing.png", 52, 836, 90, 90, 8, 133);
-	this.imgsMoveFiring_ = [];
-	this.imgsMoveFiring_.push(imgsU,imgsRU, imgsR, imgsRD, imgsD, imgsLD, imgsL, imgsLU);
-	
-	var imgsD = Tank.createImgs("img/firing2.png", 52, 52, 90, 90, 2, 133);
-	var imgsLD = Tank.createImgs("img/firing2.png", 318, 52,90, 90, 2, 133);
-	var imgsL = Tank.createImgs("img/firing2.png", 584, 52, 90, 90, 2, 133);
-	var imgsLU = Tank.createImgs("img/firing2.png", 850, 52, 90, 90, 2, 133);
-	var imgsU = Tank.createImgs("img/firing2.png", 52, 164, 90, 90, 2, 133);
-	var imgsRU = Tank.createImgs("img/firing2.png", 318, 164, 90, 90, 2, 133);
-	var imgsR = Tank.createImgs("img/firing2.png", 584, 164, 90, 90, 2, 133);
-	var imgsRD = Tank.createImgs("img/firing2.png", 850, 164, 90, 90, 2, 133);
-	this.imgsStandFiring_ = [];
-	this.imgsStandFiring_.push(imgsU,imgsRU, imgsR, imgsRD, imgsD, imgsLD, imgsL, imgsLU);
+    //设置图片
+
+    this.imgsMoveFiring_ = Tank.createImgsMatrix("img/sword.png", 52, 52, 90, 90, 8, 133, 8, 112, 4);
+    this.imgsStandFiring_ = Tank.createImgsMatrix("img/sword2.png", 52, 52, 90, 90, 8, 133, 8, 112, 4);
 }
 goog.inherits(Tank.MainTank, Tank.FireMovable);
 Tank.MainTank.prototype.die = function(){

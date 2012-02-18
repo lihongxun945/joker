@@ -1,13 +1,4 @@
-/**
-提供一个ai父类，以及若干个子类
 
-  */
-
-/* 
-   ai父类
-
-obj: 拥有此ai的物体
-*/
 
 Tank.AI = function(obj){
     this.obj_  = obj;
@@ -99,6 +90,7 @@ Tank.KeyAI.prototype.onKeyUp = function(e){
 
 /*
    随机的走动,碰到障碍物后会随机的改变方向
+   如果当前正在进行攻击动作，则不会触发随即走动和转向
 */
 Tank.RandomMoveAI = function(obj, moveProb){
     Tank.RandomMoveAI.superClass_.constructor.call(this, obj);
@@ -108,12 +100,13 @@ Tank.RandomMoveAI = function(obj, moveProb){
 }
 goog.inherits(Tank.RandomMoveAI, Tank.AI);
 Tank.RandomMoveAI.prototype.go = function(){
-	if(Tank.rand(this.autoTurnProbility_)){
+	if(this.obj_.firing_ == false && Tank.rand(this.autoTurnProbility_)){
 		this.randomTurn();
 	}
 		
 }
 Tank.RandomMoveAI.prototype.tick = function(){
+	if(this.obj_.firing_ == true) return;
 	if(Tank.rand(this.moveProb_)){
 			this.obj_.moving_ = true;
 		}else{
@@ -194,4 +187,29 @@ Tank.AutoFireAI.prototype.beHarmed = function(obj, showMessage){
 	this.obj_.move();
 }
 
+/**
+	自动说话
+*/
+Tank.AutoTalkAI = function(obj, opt_beHarmedWords, opt_nearlyDeathWords, opt_randomWords, opt_randomSayProb){
+    Tank.AutoTalkAI.superClass_.constructor.call(this, obj);
+	this.range_ = this.obj_.fireRange_;
+	this.target_ = null;    //当前锁定的攻击对象
+	this.beHarmedWords_ = opt_beHarmedWords || ["oh!fuck!", "不疼不疼!"];	//被攻击时说的话, 随即选择一句
+	this.nearlyDeathWords_ = opt_nearlyDeathWords || ["救命啊！", "快逃啊！"];	//快死时说的话，随即选择一句
+	this.randomWords_ = opt_randomWords || ["兄弟们大家一起上！", "哈哈……", "come on baby!", "我会喷火你信吗", "来，战个痛快！" ]	//随机选择一句
+	this.randomSayProb_ = opt_randomSayProb || 5;	//随即说话的概率
+}
+goog.inherits(Tank.AutoTalkAI, Tank.AI);
+Tank.AutoTalkAI.prototype.tick = function(){	//若是tick，则瞄准并攻击的延迟在1秒以内，若是放在go中，则延迟可以忽略
+	if(Tank.rand(this.randomSayProb_)){
+		this.obj_.say(this.randomSelect(this.randomWords_));
+	}
 
+}
+Tank.AutoTalkAI.prototype.beHarmed = function(obj, showMessage){
+	this.obj_.say(this.randomSelect(this.beHarmedWords_));
+	if(this.obj_.hp_ < this.obj_.hpLimit_/3) this.obj_.say(this.randomSelect(this.nearlyDeathWords_));
+}
+Tank.AutoTalkAI.prototype.randomSelect = function(arr){
+	return arr[parseInt(Math.random() * arr.length)];
+}

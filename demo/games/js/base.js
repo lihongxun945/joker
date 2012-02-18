@@ -54,6 +54,7 @@ Tank.BaseObject.prototype.go = function(){
 }
 Tank.BaseObject.prototype.draw = function(){
     this.changeImage();
+    this.canvas_.save();
     if(this.currentImg_ && this.visible_){
         //this.canvas_.drawImage(this.currentImg_, this.loc_.x, this.loc_.y, this.size_.x, this.size_.y);
 		if(this.currentImg_.sprite_){
@@ -63,11 +64,12 @@ Tank.BaseObject.prototype.draw = function(){
 			this.canvas_.drawImage(this.currentImg_, this.loc_.x, this.loc_.y, this.size_.x, this.size_.y);
 		}
     }
+    this.canvas_.restore();
+    
 }
 
 
 Tank.BaseObject.prototype.changeImage = function(){
-	try{
     if(this.changeImageCount_ < 0){
         this.imgIndex_ ++;
         if(this.imgIndex_ >= this.imgs_.length)
@@ -77,9 +79,6 @@ Tank.BaseObject.prototype.changeImage = function(){
     }
     this.currentImg_ = this.imgs_[this.imgIndex_];
     this.changeImageCount_ --;
-	}catch(e){
-		console.log(this);
-	}
 }
 /****************Life**************/
 /*
@@ -100,6 +99,9 @@ Tank.Life = function(name, size, loc, imgs, opt_isBarrier4Walk, opt_changeImageT
     this.showBloodBar_ = false;
     this.missProb_ = 0;   //闪避攻击的概率
     this.ais_ = []; //一个物体可以有多个ai
+	this.words_ = null;	//当前说的话
+	this.wordsTime_ = 3;	//一句话的持续时间
+	this.wordsTimeCount_ = 0;
     this.sceneManager_ = Tank.SceneManager; //保存一个引用
 }
 goog.inherits(Tank.Life, Tank.BaseObject);
@@ -109,6 +111,7 @@ goog.inherits(Tank.Life, Tank.BaseObject);
 Tank.Life.prototype.tick = function(){
     for(i in this.ais_) this.ais_[i].tick();
     this.cure(this.hpRecover_, false);
+	if(this.wordsTimeCount_ > 0) this.wordsTimeCount_ --;
 }
 Tank.Life.prototype.beHit = function(obj){
     for(i in this.ais_) this.ais_[i].beHit(obj);
@@ -116,6 +119,10 @@ Tank.Life.prototype.beHit = function(obj){
 }
 Tank.Life.prototype.popMessage = function(m){
     Tank.SceneManager.push(new Tank.Message(m, null, new Tank.Point(this.loc_), "rgb(255, 0, 0)")); 
+}
+Tank.Life.prototype.say = function(m){
+    this.words_ = m;
+	this.wordsTimeCount_ = this.wordsTime_;
 }
 //恢复生命值
 Tank.Life.prototype.cure = function(n, showMessage){
@@ -181,6 +188,13 @@ Tank.Life.prototype.draw = function(){
         this.canvas_.fillRect(this.loc_.x, this.loc_.y - 20, 50 * (this.hp_ / this.hpLimit_), 6);
         this.canvas_.fillStyle = lastStyle;
     }
+	//say
+	if(this.wordsTimeCount_ > 0 &&this.words_){
+		this.canvas_.fillStyle = "rgb(255, 255, 255)";
+		this.canvas_.fillRect(this.loc_.x - 50, this.loc_.y - 30, 120, 20);
+		this.canvas_.fillStyle = "rgb(255, 0, 0)";
+		this.canvas_.fillText(this.words_, this.loc_.x - 45, this.loc_.y - 17 );
+	}
 }
 
 
@@ -188,32 +202,10 @@ Tank.Life.prototype.draw = function(){
 /************Movable*************/
 
 Tank.Movable = function(){
-	{
-		var imgsD = Tank.createImgs("img/walking.png", 52, 52, 90, 90, 8, 133);
-		var imgsLD = Tank.createImgs("img/walking.png", 52, 164, 90, 90, 8, 133);
-		var imgsL = Tank.createImgs("img/walking.png", 52, 276, 90, 90, 8, 133);
-		var imgsLU = Tank.createImgs("img/walking.png", 52, 388, 90, 90, 8, 133);
-		var imgsU = Tank.createImgs("img/walking.png", 52, 500, 90, 90, 8, 133);
-		var imgsRU = Tank.createImgs("img/walking.png", 52, 612, 90, 90, 8, 133);
-		var imgsR = Tank.createImgs("img/walking.png", 52, 724, 90, 90, 8, 133);
-		var imgsRD = Tank.createImgs("img/walking.png", 52, 836, 90, 90, 8, 133);
-		this.imgsWalking_ = [];	//移动时的动画
-		this.imgsWalking_.push(imgsU,imgsRU, imgsR, imgsRD, imgsD, imgsLD, imgsL, imgsLU);
-	}
-	{
-		var imgsD = [Tank.createImg("img/standing.png", 52, 276,90, 90)];
-		var imgsLD = [Tank.createImg("img/standing.png",185, 276,90, 90)];
-		var imgsL = [Tank.createImg("img/standing.png", 318, 276,90, 90)];
-		var imgsLU = [Tank.createImg("img/standing.png", 451, 276,90, 90)];
-		var imgsU = [Tank.createImg("img/standing.png", 584, 276,90, 90)];
-		var imgsRU = [Tank.createImg("img/standing.png", 717,276,90, 90)];
-		var imgsR = [Tank.createImg("img/standing.png", 850, 276,90, 90)];
-		var imgsRD = [Tank.createImg("img/standing.png", 983, 276,90, 90)];
-		this.imgsStand_ = [];	//停止不动时的动画
-		this.imgsStand_.push(imgsU,imgsRU, imgsR, imgsRD, imgsD, imgsLD, imgsL, imgsLU);
-	}
+    this.imgsWalking_ = Tank.createImgsMatrix("img/walking.png", 52, 52, 90, 90, 8, 133, 8,  112, 4);
+    this.imgsStand_= Tank.wrapArray(Tank.createImgs("img/standing.png", 52, 276, 90, 90, 8, 133, 4));
 	this.imgsAll_ = this.imgsStand_;
-    Tank.Movable.superClass_.constructor.call(this, "Tank", null, new Tank.Point(100, 100), imgsU, true, 0);
+    Tank.Movable.superClass_.constructor.call(this, "Tank", null, new Tank.Point(100, 100), this.imgsAll_[0], true, 0);
 	
 	this.size_ = new Tank.Point(40, 40);
     this.isBarrier4Walk_ = false;
@@ -315,17 +307,7 @@ Tank.Movable.prototype.outOfRange = function(direct){
 Tank.FireMovable = function(move_imgs, Bullet){
     Tank.FireMovable.superClass_.constructor.call(this, move_imgs);
 	
-    var imgsD = Tank.createImgs("img/firing.png", 52, 52, 90, 90, 8, 133);
-	var imgsLD = Tank.createImgs("img/firing.png", 52, 164, 90, 90, 8, 133);
-	var imgsL = Tank.createImgs("img/firing.png", 52, 276, 90, 90, 8, 133);
-	var imgsLU = Tank.createImgs("img/firing.png", 52, 388, 90, 90, 8, 133);
-	var imgsU = Tank.createImgs("img/firing.png", 52, 500, 90, 90, 8, 133);
-	var imgsRU = Tank.createImgs("img/firing.png", 52, 612, 90, 90, 8, 133);
-	var imgsR = Tank.createImgs("img/firing.png", 52, 724, 90, 90, 8, 133);
-	var imgsRD = Tank.createImgs("img/firing.png", 52, 836, 90, 90, 8, 133);
-	this.imgsMoveFiring_ = [];
-	this.imgsMoveFiring_.push(imgsU,imgsRU, imgsR, imgsRD, imgsD, imgsLD, imgsL, imgsLU);
-	
+    this.imgsMoveFiring_ = Tank.createImgsMatrix("img/firing.png", 52, 52, 90, 90, 8, 133, 8, 112, 4);
 	var imgsD = Tank.createImgs("img/firing2.png", 52, 52, 90, 90, 2, 133);
 	var imgsLD = Tank.createImgs("img/firing2.png", 318, 52,90, 90, 2, 133);
 	var imgsL = Tank.createImgs("img/firing2.png", 584, 52, 90, 90, 2, 133);
@@ -343,7 +325,7 @@ Tank.FireMovable = function(move_imgs, Bullet){
     this.fireSpeed_ = 10; //
     this.fireSpeedCount_ = 0;
 	this.fireRange_ = 300;
-    this.bulletSpeed_ = 10;
+    this.bulletSpeed_ = 7;
     this.Bullet_ = Bullet || Tank.Bullet;
     this.bullerPower_ = 10;
     this.crit_ = 200 ; //暴击伤害 默认是2倍暴击
@@ -409,24 +391,19 @@ Tank.FireMovable.prototype.changeImage  = function(){
 	Tank.Movable.superClass_.changeImage.call(this);
 }
 /**************Bullet************/
+//子弹在8个方向上都是同一组图片，只是旋转方向不同
 Tank.Bullet = function(owner, power, direc, loc, speed, range){
     Tank.Bullet.superClass_.constructor.call(this);
     var imgsU = [Tank.createImg("img/bullets/bullet.png")];
-    var imgsRU = [Tank.createImg("img/bullets/bullet.png")];
-    var imgsR = [Tank.createImg("img/bullets/bullet.png")];
-    var imgsRD = [Tank.createImg("img/bullets/bullet.png")];
-    var imgsD = [Tank.createImg("img/bullets/bullet.png")];
-    var imgsLD = [Tank.createImg("img/bullets/bullet.png")];
-    var imgsL = [Tank.createImg("img/bullets/bullet.png")];
-    var imgsLU = [Tank.createImg("img/bullets/bullet.png")];
     this.imgsWalking_ = [];
-    this.imgsWalking_.push(imgsU,imgsRU, imgsR, imgsRD, imgsD, imgsLD, imgsL, imgsLU);
+    for(var i = 0; i<8;i++)this.imgsWalking_.push(imgsU);
 	this.imgsAll_ = this.imgsWalking_;
+    this.imgsStand_ = this.imgsWalking_;
     this.loc_ = loc;
 	this.startLoc_ = new Tank.Point(loc);
     this.moveDirec_ = direc;
     this.moving_ = true;
-    this.moveSpeed_ = speed || 10;
+    this.moveSpeed_ = speed || 7;
 	this.range_ = range;
     this.size_ = new Tank.Point(10,10);
     this.camp_ = owner.camp_;
@@ -437,6 +414,7 @@ Tank.Bullet = function(owner, power, direc, loc, speed, range){
     this.isBarrier4Bullet_ = false;
     this.invincible_ = true;
     this.owner_ = owner; //子弹的发出者
+    this.rotate_ = 0; //如果图片初始不是向上的,则设置此参数表明初始的方向 
 }
 goog.inherits(Tank.Bullet, Tank.Movable);
 Tank.Bullet.prototype.hit = function(obj){
@@ -454,32 +432,68 @@ Tank.Bullet.prototype.die = function(bullet){
 Tank.Bullet.prototype.beHit = function(bullet){
     
 }
+Tank.Bullet.prototype.draw = function(){
+        this.changeImage();
+        this.canvas_.save();
+        //调整为居中
+        switch((this.moveDirec_ + parseInt(this.rotate_))%8){
+            case(0):
+                this.canvas_.translate( (this.loc_.x), (this.loc_.y));
+                break;
+            case(1):
+                this.canvas_.translate( (this.loc_.x + this.size_.x/2), (this.loc_.y ));
+                break;
+            case(2):
+                this.canvas_.translate( (this.loc_.x + this.size_.x), (this.loc_.y));
+                break;
+            case(3):
+                this.canvas_.translate( (this.loc_.x + this.size_.x), (this.loc_.y+this.size_.y/2 ));
+                break;
+            case(4):
+                this.canvas_.translate( (this.loc_.x + this.size_.x), (this.loc_.y+this.size_.y ));
+                break;
+            case(5):
+                this.canvas_.translate( (this.loc_.x + this.size_.x/2), (this.loc_.y+this.size_.y ));
+                break;
+            case(6):
+                this.canvas_.translate( (this.loc_.x ), (this.loc_.y+this.size_.y ));
+                break;
+            case(7):
+                this.canvas_.translate( (this.loc_.x ), (this.loc_.y+this.size_.y/2 ));
+                break;
+        }
+        this.canvas_.rotate(Math.PI/4*((this.moveDirec_ + this.rotate_)%8));
 
+        if(this.currentImg_ && this.visible_){
+            //this.canvas_.drawImage(this.currentImg_, this.loc_.x, this.loc_.y, this.size_.x, this.size_.y);
+            if(this.currentImg_.sprite_){
+                var sprite = this.currentImg_.sprite_;
+                this.canvas_.drawImage(this.currentImg_, sprite.x, sprite.y, sprite.w, sprite.h, 0, 0, this.size_.x, this.size_.y);
+            }else{
+                this.canvas_.drawImage(this.currentImg_, 0, 0, this.size_.x, this.size_.y);
+            }
+        }
+
+        this.canvas_.restore();
+}
 /**********魔法***************/
 //魔法是一类特殊的子弹, 魔法攻击的伤害是按照物理伤害的倍数来算的。
 //自定义的魔法，从此类继承
 Tank.Magic = function(owner, power, direc, loc){
-	Tank.Magic.superClass_.constructor.call(this);
+	Tank.Magic.superClass_.constructor.call(this, owner, power, direc, loc);
 	this.power_ = power * 5;	//造成5倍伤害
 	
-	var imgsU = [Tank.createImg("img/bullets/10.gif")];
-    var imgsRU = [Tank.createImg("img/bullets/10.gif")];
-    var imgsR = [Tank.createImg("img/bullets/10.gif")];
-    var imgsRD = [Tank.createImg("img/bullets/10.gif")];
-    var imgsD = [Tank.createImg("img/bullets/10.gif")];
-    var imgsLD = [Tank.createImg("img/bullets/10.gif")];
-    var imgsL = [Tank.createImg("img/bullets/10.gif")];
-    var imgsLU = [Tank.createImg("img/bullets/10.gif")];
-	this.imgsWalking_ = [];
-    this.imgsWalking_.push(imgsU,imgsRU, imgsR, imgsRD, imgsD, imgsLD, imgsL, imgsLU);
+	var imgsU = [Tank.createImg("img/bullets/bullets.png",66, 192, 62, 62 )];
+    this.imgsWalking_ = [];
+    for(var i = 0; i<8;i++)this.imgsWalking_.push(imgsU);
 	this.imgsAll_ = this.imgsWalking_;
-	
+    this.imgsStand_ = this.imgsWalking_;
+
 	this.loc_ = loc;
 	this.startLoc_ = new Tank.Point(loc);
     this.moveDirec_ = direc;
-    this.moveSpeed_ = speed || 10;
-	this.range_ = range;
-    this.size_ = new Tank.Point(10,10);
+    this.moveSpeed_ = 10;
+    this.size_ = new Tank.Point(50,50);
     this.camp_ = owner.camp_;
     this.type_ = "bullet";
     this.isBullet_ = true;
@@ -488,16 +502,19 @@ Tank.Magic = function(owner, power, direc, loc){
     this.invincible_ = true;
     this.owner_ = owner; //子弹的发出者
 	this.already_ = [];	//已经被攻击过的，每个敌人只攻击一次
-	this.range_ = 200;
+	this.range_ = 300;
+    this.rotate_ = 4;
 }
-goog.inherits(Tank.Magic, Tank.Movable);
+goog.inherits(Tank.Magic, Tank.Bullet);
 Tank.Magic.prototype.draw = function(){	//可以重写此方法来 实现特殊的视觉效果
 	Tank.Magic.superClass_.draw.call(this);
 }
 Tank.Magic.prototype.hit = function(obj){
-    if(this.camp_ != obj.camp_ && obj.isBarrier4Bullet_){
+    if(this.camp_ != obj.camp_ && obj.isBarrier4Bullet_ && !Tank.inArray(obj, this.already_)){
 		obj.beHarmed(this, true);
+        this.already_.push(obj);
     }
+    if(obj.camp_ != this.camp_ && obj.isBarrier_ &&obj.isBarrier4Bullet_ ) this.alive_ = false;
 }
 
 /*************各种障碍物**************/
