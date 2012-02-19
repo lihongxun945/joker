@@ -155,6 +155,18 @@ Tank.GreenFireBullet = function(owner, power, direc, loc, speed, range){
     this.moveSpeed_ = 5;
 }
 goog.inherits(Tank.GreenFireBullet, Tank.Bullet);
+//
+Tank.SwordBullet = function(owner, power, direc, loc, speed, range){
+	Tank.SwordBullet.superClass_.constructor.call(this, owner, power, direc, loc, speed, range);
+	var imgsU = [Tank.createImg("img/bullets/bullets.png", 65, 0, 31, 31)];
+    this.imgsWalking_ = [];
+    for(var i = 0; i < 8; i++)
+        this.imgsWalking_.push(imgsU);
+	this.imgsAll_ = this.imgsWalking_;
+	this.size_ = new Tank.Point(23,23);
+    this.moveSpeed_ = 7;
+}
+goog.inherits(Tank.SwordBullet, Tank.Bullet);
 
 
 /****************8自定义tree形状*******************/
@@ -284,7 +296,9 @@ Tank.MainTank = function(){
     this.loc_ = new Tank.Point(200, 550);
     this.ais_.push(new Tank.KeyAI(this));
     this.bulletPower_  = 30;
-    this.Bullet_ = Tank.Magic;
+    this.Bullet_ = Tank.SwordBullet;
+    this.fireRange_ = 300;
+    this.mp_ = this.mpLimit_ = 200;
 	
     //设置图片
 

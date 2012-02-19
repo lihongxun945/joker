@@ -22,7 +22,7 @@ Tank.BaseObject = function(name, imgs, opt_loc, opt_size){
     this.changeImageTime_ = 1;
     this.changeImageCount_ = 0;
     this.imgIndex_ = -1;
-    this.zindex_ = 1; //1 - 5
+    this.zindex_ = 0;
 
     this.size_ = opt_size || new Tank.Point(50, 50);
     this.loc_ = opt_loc || new Tank.Point(50, 50);
@@ -103,7 +103,6 @@ Tank.Life = function(name, size, loc, imgs, opt_isBarrier4Walk, opt_changeImageT
 	this.wordsTime_ = 3;	//一句话的持续时间
 	this.wordsTimeCount_ = 0;
     this.sceneManager_ = Tank.SceneManager; //保存一个引用
-    this.zindex_ = 2;
 }
 goog.inherits(Tank.Life, Tank.BaseObject);
 
@@ -378,7 +377,7 @@ Tank.FireMovable.prototype.useMp = function(n, showMessage){
         this.mp_ -= n;
         return true;
     }else {
-        if(showMessage) this.say("魔法不足!", 1);
+        if(showMessage) this.say("魔法不足!");
         return false;
     }
 }
@@ -551,7 +550,7 @@ Tank.Magic = function(owner, power, direc, loc){
 	this.startLoc_ = new Tank.Point(loc);
     this.moveDirec_ = direc;
     this.moveSpeed_ = 10;
-    this.size_ = new Tank.Point(40,40);
+    this.size_ = new Tank.Point(50,50);
     this.camp_ = owner.camp_;
     this.type_ = "bullet";
     this.isBullet_ = true;

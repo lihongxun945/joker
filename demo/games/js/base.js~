@@ -22,7 +22,7 @@ Tank.BaseObject = function(name, imgs, opt_loc, opt_size){
     this.changeImageTime_ = 1;
     this.changeImageCount_ = 0;
     this.imgIndex_ = -1;
-    this.zindex_ = 1; //1 - 5
+    this.zindex_ = 0;
 
     this.size_ = opt_size || new Tank.Point(50, 50);
     this.loc_ = opt_loc || new Tank.Point(50, 50);
@@ -89,7 +89,7 @@ Tank.Life = function(name, size, loc, imgs, opt_isBarrier4Walk, opt_changeImageT
     this.camp_ = 0; //0: 中立，会挡住两方的子弹，1：友军，2：敌军
     this.hp_ = 200;  //当前的生命值 
     this.hpLimit_ = 200;    //
-    this.hpRecover_ = 2; //每秒钟自动回复生命
+    this.hpRecover_ = 0; //每秒钟自动回复生命
     this.protect_ = 0; //护甲
     this.isBarrier4Walk_ = opt_isBarrier4Walk || false;
     this.isBarrier4Bullet_ = true;
@@ -103,7 +103,6 @@ Tank.Life = function(name, size, loc, imgs, opt_isBarrier4Walk, opt_changeImageT
 	this.wordsTime_ = 3;	//一句话的持续时间
 	this.wordsTimeCount_ = 0;
     this.sceneManager_ = Tank.SceneManager; //保存一个引用
-    this.zindex_ = 2;
 }
 goog.inherits(Tank.Life, Tank.BaseObject);
 
@@ -121,9 +120,9 @@ Tank.Life.prototype.beHit = function(obj){
 Tank.Life.prototype.popMessage = function(m){
     Tank.SceneManager.push(new Tank.Message(m, null, new Tank.Point(this.loc_), "rgb(255, 0, 0)")); 
 }
-Tank.Life.prototype.say = function(m, opt_time){
+Tank.Life.prototype.say = function(m){
     this.words_ = m;
-	this.wordsTimeCount_ = opt_time || this.wordsTime_;
+	this.wordsTimeCount_ = this.wordsTime_;
 }
 //恢复生命值
 Tank.Life.prototype.cure = function(n, showMessage){
@@ -192,9 +191,9 @@ Tank.Life.prototype.draw = function(){
 	//say
 	if(this.wordsTimeCount_ > 0 &&this.words_){
 		this.canvas_.fillStyle = "rgb(255, 255, 255)";
-		this.canvas_.fillRect(this.loc_.x - 40, this.loc_.y - 30, 120, 20);
+		this.canvas_.fillRect(this.loc_.x - 50, this.loc_.y - 30, 120, 20);
 		this.canvas_.fillStyle = "rgb(255, 0, 0)";
-		this.canvas_.fillText(this.words_, this.loc_.x - 35, this.loc_.y - 17 );
+		this.canvas_.fillText(this.words_, this.loc_.x - 45, this.loc_.y - 17 );
 	}
 }
 
@@ -332,9 +331,8 @@ Tank.FireMovable = function(move_imgs, Bullet){
     this.bullerPower_ = 10;
     this.crit_ = 200 ; //暴击伤害 默认是2倍暴击
     this.critProb_ = 0;//暴击概率，默认为0
-    this.Magic_ = Tank.Magic;   //魔法攻击
-    this.mp_ = this.mpLimit_ = 0; //魔法值	
-    this.mpRecover_ = 5;   //魔法恢复速度
+    this.Magic_ = Tank.Magic_;   //魔法攻击
+	
 }
 goog.inherits(Tank.FireMovable, Tank.Movable);
 
@@ -350,10 +348,6 @@ Tank.FireMovable.prototype.act = function(direc){
         this.fireSpeedCount_ --;
     }
 }
-Tank.FireMovable.prototype.tick = function(){
-    Tank.FireMovable.superClass_.tick.call(this);
-    this.cureMp(this.mpRecover_, false);
-}
 //成功对另一个单位造成伤害后的回调函数
 //参数：伤害数值,被伤害的对象
 Tank.FireMovable.prototype.harm = function(num, obj){
@@ -362,30 +356,10 @@ Tank.FireMovable.prototype.harm = function(num, obj){
     }
     for(i in this.equips_) this.equips_[i].harm(num, obj);
 }
-//恢魔法值复
-Tank.Life.prototype.cureMp = function(n, showMessage){
-    if(this.mp_ < this.mpLimit_){
-        var diff = this.mpLimit_ - this.mp_;
-        var cn = diff < n ? diff : n;
-        this.mp_ += cn;
-        if(showMessage) this.popMessage("+" + cn +" mp");
-    }
-
-}
-//消耗mp
-Tank.FireMovable.prototype.useMp = function(n, showMessage){
-    if(this.mp_ >= n){
-        this.mp_ -= n;
-        return true;
-    }else {
-        if(showMessage) this.say("魔法不足!", 1);
-        return false;
-    }
-}
 Tank.FireMovable.prototype.fire  = function(){
     var computedBulletPower = this.bulletPower_;
     if(Tank.rand(this.critProb_)){
-        computedBulletPower *= parseInt(computedBulletPower * this.crit_ / 100);
+        computedBulletPower *= parseInt(this.crit_ / 100);
         this.popMessage("暴击 " + this.crit_ + "%");
     }
     for(i in this.equips_) this.equips_[i].fire();
@@ -394,9 +368,7 @@ Tank.FireMovable.prototype.fire  = function(){
     if(this.fireType_ == 1){
         if(this.fireRange_ < 100) {// 使用一个特殊的不可见的魔法子弹来实现近战伤害
             bullet = new Tank.Magic(this, computedBulletPower,  this.fireDirec_, new Tank.Point(this.loc_), this.bulletSpeed_, this.fireRange_);
-            bullet.range_ = this.fireRange_;
-            bullet.size_ = new Tank.Point(this.size_);
-            bullet.power_ = computedBulletPower;
+            bullet.fireRange_ = this.fireRange_;
             bullet.visible_ = false;
         }else{
             bullet = new this.Bullet_(this, computedBulletPower,  this.fireDirec_, new Tank.Point(this.loc_), this.bulletSpeed_, this.fireRange_)
@@ -404,11 +376,10 @@ Tank.FireMovable.prototype.fire  = function(){
         }
     }
     //魔法攻击
-    if(this.fireType_ == 2 && this.useMp(this.Magic_.mp_, true)){
+    if(this.fireType == 2){
         bullet = new this.Magic_(this, computedBulletPower,  this.fireDirec_, new Tank.Point(this.loc_));
-        this.say(this.Magic_.name_);
     }
-    if(bullet) Tank.SceneManager.push(bullet);
+    Tank.SceneManager.push(bullet);
 }
 Tank.FireMovable.prototype.startFire  = function(opt_type){
         this.fireType_ = opt_type || 1;
@@ -420,19 +391,6 @@ Tank.FireMovable.prototype.stopFire  = function(){
 Tank.FireMovable.prototype.die = function(){
     Tank.FireMovable.superClass_.die.call(this);
     Tank.SceneManager.push(new Tank.Explode(new Tank.Point(this.loc_)));//临死前，发生爆炸
-}
-Tank.FireMovable.prototype.draw = function(){
-    Tank.FireMovable.superClass_.draw.call(this);
-    //draw mpbar 
-    if(!this.invincible_ && this.showBloodBar_ && this.mpLimit_ > 0){
-        var lastStyle = this.canvas_.fillStyle;
-        this.canvas_.fillStyle = "rgb(190, 190, 190)";
-        this.canvas_.fillRect(this.loc_.x, this.loc_.y - 10, 50, 6);
-        this.canvas_.fillStyle = "rgb(0, 0, 255)";
-
-        this.canvas_.fillRect(this.loc_.x, this.loc_.y - 10, 50 * (this.mp_ / this.mpLimit_), 6);
-        this.canvas_.fillStyle = lastStyle;
-    }
 }
 Tank.FireMovable.prototype.changeImage  = function(){
 	if(this.firing_ == true && this.moving_ && this.enableMove_ && this.imgsMoveFiring_){
@@ -551,7 +509,7 @@ Tank.Magic = function(owner, power, direc, loc){
 	this.startLoc_ = new Tank.Point(loc);
     this.moveDirec_ = direc;
     this.moveSpeed_ = 10;
-    this.size_ = new Tank.Point(40,40);
+    this.size_ = new Tank.Point(50,50);
     this.camp_ = owner.camp_;
     this.type_ = "bullet";
     this.isBullet_ = true;
@@ -565,7 +523,6 @@ Tank.Magic = function(owner, power, direc, loc){
 }
 goog.inherits(Tank.Magic, Tank.Bullet);
 Tank.Magic.mp_ = 50; //此魔法需要消耗的mp
-Tank.Magic.name_ = "火焰术"; //此魔法的名字
 Tank.Magic.prototype.draw = function(){	//可以重写此方法来 实现特殊的视觉效果
 	Tank.Magic.superClass_.draw.call(this);
 }

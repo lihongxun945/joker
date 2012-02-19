@@ -1,5 +1,3 @@
-
-
 Tank.AI = function(obj){
     this.obj_  = obj;
 }
@@ -62,9 +60,11 @@ Tank.KeyAI.prototype.onKeyDown = function(e){
             this.left_ = true;
             break;
         case(goog.events.KeyCodes.A):
-            this.obj_.startFire();;
+            this.obj_.startFire(1);;
             break;
-
+        case(goog.events.KeyCodes.S):
+            this.obj_.startFire(2);;
+            break;
     }
 }
 Tank.KeyAI.prototype.onKeyUp = function(e){
@@ -82,6 +82,9 @@ Tank.KeyAI.prototype.onKeyUp = function(e){
             this.left_ = false;
             break;
         case(goog.events.KeyCodes.A):
+            this.obj_.stopFire();
+            break;
+        case(goog.events.KeyCodes.S):
             this.obj_.stopFire();
             break;
     }
@@ -207,8 +210,8 @@ Tank.AutoTalkAI.prototype.tick = function(){	//若是tick，则瞄准并攻击�
 
 }
 Tank.AutoTalkAI.prototype.beHarmed = function(obj, showMessage){
-	this.obj_.say(this.randomSelect(this.beHarmedWords_));
-	if(this.obj_.hp_ < this.obj_.hpLimit_/3) this.obj_.say(this.randomSelect(this.nearlyDeathWords_));
+	//this.obj_.say(this.randomSelect(this.beHarmedWords_));
+	//if(this.obj_.hp_ < this.obj_.hpLimit_/3) this.obj_.say(this.randomSelect(this.nearlyDeathWords_));
 }
 Tank.AutoTalkAI.prototype.randomSelect = function(arr){
 	return arr[parseInt(Math.random() * arr.length)];

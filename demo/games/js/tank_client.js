@@ -32,7 +32,7 @@ Tank.TankClient.prototype.init = function(){
     this.canvas_.fillText("HTML5 GAME v0.1。", 300, 200);
     this.canvas_.fillStyle = "rgb(255, 0, 0)";
     this.canvas_.fillText("" +
-            "按键说明： 方向键移动，A 发射子弹，P暂停游戏，" +
+            "按键说明： 方向键移动，A 发攻击，s使用魔法，P暂停游戏，" +
             "未完，待续>>" +
             "", 100, 250);
 	this.canvas_.fillText("" +
@@ -89,8 +89,17 @@ Tank.TankClient.prototype.handleImageLoaderEvent = function(e){
 	this.canvas_.fillStyle = "rgb(255, 255, 0)";
     this.canvas_.fillRect(100, 260, 600, 100);
 	this.canvas_.fillStyle = "rgb(255, 0, 0)";
-	this.canvas_.fillText("正在加载图片，网速较慢请稍后…… " + parseInt(count / Tank.TankClient.imgsPreload_.getKeys().length * 100) + "%", 100, 300);
+	this.canvas_.fillText("正在加载图片，网速较慢请稍后…… ", 100, 300)
+    this.canvas_.fillStyle = "rgb(0, 255, 0)";
+    this.canvas_.fillRect(100, 310, 300, 20);
+    this.canvas_.fillStyle = "rgb(0, 0, 255)";
+    this.canvas_.fillRect(100, 310, parseInt(300 * count / Tank.TankClient.imgsPreload_.getKeys().length), 20);
+    this.canvas_.fillStyle = "rgb(0, 0, 0)";
+    this.canvas_.fillText(parseInt(count / Tank.TankClient.imgsPreload_.getKeys().length * 100) + "%", 250, 325);
+
 	if(count >= Tank.TankClient.imgsPreload_.getKeys().length) {
+
+        this.canvas_.fillStyle = "rgb(255, 0, 0)";
 		this.canvas_.fillText("ok！按空格键开始游戏！", 100, 350);
 		this.afterImgLoaded();
 	}
