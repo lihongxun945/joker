@@ -50,6 +50,8 @@ Tank.TankClient.prototype.loadImg = function(){
 	imgs.set("firing.png", "img/firing.png");
 	imgs.set("firing2.png", "img/firing2.png");
 	imgs.set("standing.png", "img/standing.png");
+	imgs.set("sword.png", "img/sword.png");
+	imgs.set("sword2.png", "img/sword2.png");
 	imgs.set("walking.png", "img/walking.png");
 	imgs.set("zombie-attack.png", "img/zombie-attack.png");
 	imgs.set("zombie-stand.png", "img/zombie-stand.png");
@@ -66,6 +68,11 @@ Tank.TankClient.prototype.loadImg = function(){
 	imgs.set("rockb1.png", "img/walls/rockb1.png");
 	imgs.set("rockb2.png", "img/walls/rockb2.png");
 	imgs.set("bullet.png", "img/bullets/bullet.png");
+	imgs.set("bullets.png", "img/bullets/bullets.png");
+	imgs.set("equip0.png", "img/equips/equip_0.gif");
+	imgs.set("equip1.png", "img/equips/equip_1.jpg");
+	imgs.set("equip2.png", "img/equips/equip_2.jpg");
+	imgs.set("equip3.png", "img/equips/equip_3.jpg");
 	imgs.set("10.gif", "img/bullets/10.gif");
 	
 	var keys = imgs.getKeys();
