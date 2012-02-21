@@ -1,5 +1,9 @@
 
 /***************TankClient**************/
+Tank.decorate= function(ca){
+    tank = new Tank.TankClient();
+    tank.decorate(ca);
+}
 Tank.TankClient = function(){
     Tank.Panel.init(goog.dom.getElement("panel"));
     Tank.canvas_ = null;
@@ -112,9 +116,12 @@ Tank.TankClient.prototype.handleImageLoaderEvent = function(e){
 	}
 }
 Tank.TankClient.prototype.afterImgLoaded = function(){
-    this.getHandler().listen(Tank.timer_, goog.Timer.TICK, this.act);
-    this.getHandler().listen(Tank.listenBody_, goog.events.EventType.KEYDOWN, this.onKeyDown);
-    this.getHandler().listen(Tank.listenBody_, goog.events.EventType.KEYUP, this.onKeyUp);
+    if(!this.alreadyBind_){
+        this.getHandler().listen(Tank.timer_, goog.Timer.TICK, this.act);
+        this.getHandler().listen(Tank.listenBody_, goog.events.EventType.KEYDOWN, this.onKeyDown);
+        this.getHandler().listen(Tank.listenBody_, goog.events.EventType.KEYUP, this.onKeyUp);
+        this.alreadyBind_ = true;
+    }
 }
 Tank.TankClient.prototype.act = function(){
 	this.canvas_.fillStyle = "rgb(200, 200, 200)";
@@ -169,6 +176,7 @@ Tank.SceneManager.all_ = [];
 Tank.SceneManager.barrier_ = [];
 Tank.SceneManager.barrierMap_ = [];
 Tank.SceneManager.refreshCount_ = 0;    //用来记录是不是过了一秒钟
+Tank.SceneManager.seconds_ = 0;    //用来记录是不是过了一秒钟
 Tank.SceneManager.setAll = function(all){
     Tank.SceneManager.all_ = all;
 }
@@ -202,12 +210,22 @@ Tank.SceneManager.act = function(){
         Tank.SceneManager.all_[i].act();
         if(Tank.SceneManager.refreshCount_ <= 0){
             Tank.SceneManager.all_[i].tick();
+            if(Tank.SceneManager.mainTank.alive_ == false){
+                tank.pause(),Tank.MapManager.reload(),tank.pause();
+            }else{
+                if(!Tank.SceneManager.hasEnimy() && Tank.SceneManager.seconds_>5) {
+                    tank.pause();
+                    Tank.MapManager.next();
+                    tank.pause();
+                }
+            }
+            Tank.SceneManager.seconds_ ++;
         }
     }
 	for(var i in barrier){
 		if(barrier[i].alive_ == false){
 			barrier.splice(i, 1);
-			this.refreshBarrierMap();
+			Tank.SceneManager.refreshBarrierMap();
 		}
 	}
     if( Tank.SceneManager.refreshCount_ <= 0) {
@@ -230,10 +248,18 @@ Tank.SceneManager.refreshBarrierMap = function(){
 	for(var i in ba){
 		bm[ba[i].gridLoc_.x][ba[i].gridLoc_.y] = 1;
 	}
-	console.log("refresh");
 }
-Tank.SceneManager.getReachable = function(gridLoc){
+Tank.SceneManager.removeAll = function(){
+    Tank.SceneManager.all_ = [];
+    Tank.SceneManager.barrier_ = [];
 	
+}
+Tank.SceneManager.hasEnimy = function(){
+    var all = Tank.SceneManager.all_;
+    for(var i in all){
+        if(all[i].camp_ == 2) return true;
+    }
+    return false;
 }
 //获得指定圆形范围内的所有物体
 //在没有特殊说明的情况下，此类中所有的get方法取得的物体都不包括 camp_ == -1的无阵营物体
@@ -269,7 +295,6 @@ Tank.SceneManager.getObjsByScopeAndCamp = function(loc, radius, camp){
 Tank.MapManager = {};
 Tank.MapManager.canvas_ = Tank.canvas_;
 Tank.MapManager.sceneManager_ = Tank.SceneManager;
-Tank.MapManager.maps_ = []
 Tank.MapManager.index_ = 0;
 Tank.MapManager.currentMap_ = null;
 
@@ -281,16 +306,30 @@ Tank.MapManager.start = function(){
     this.load(Tank.MapManager.index_);
 }
 Tank.MapManager.next = function(){
-    this.load( ++ Tank.MapManager.index_ );
+    Tank.MapManager.index_++;
+    if(Tank.MapManager.index_ + 1 > Tank.maps.length)
+        Tank.MapManager.index_ = 0;
+    this.load( Tank.MapManager.index_ );
+}
+//重新加载地图
+Tank.MapManager.reload = function(){
+    this.load(Tank.MapManager.index_ );
 }
 //加载指定关卡
 Tank.MapManager.load = function(index){
     Tank.MapManager.index_ = index;
-    Tank.MapManager.currentMap_ = Tank.MapManager.maps_[index];
-    this.parseMap(Tank.MapManager.currentMap);
+    Tank.MapManager.currentMap_ = Tank.maps[index];
+    this.parseMap(Tank.MapManager.currentMap_);
 }
 //解析地图
 Tank.MapManager.parseMap = function(map){
+    Tank.SceneManager.removeAll();
+    var objs = map.objs;
+    for(var i in objs){
+        this.createObj(objs[i]);
+    }
+
+/*
     this.sceneManager_.push(new Tank.MainTank());
     this.sceneManager_.push(new Tank.Emplacement(new Tank.Point(400, 100)));
 	this.sceneManager_.push(new Tank.Emplacement(new Tank.Point(450, 100)));
@@ -309,31 +348,59 @@ Tank.MapManager.parseMap = function(map){
     this.sceneManager_.push(new Tank.Equip2(new Tank.Point(400, 50)));
     this.sceneManager_.push(new Tank.Equip3(new Tank.Point(450, 50)));
     this.sceneManager_.push(new Tank.Equip4(new Tank.Point(500, 50)));
-
-    for(var i = 0; i < 4; i ++){
-        this.sceneManager_.push(new Tank.RandomTank(new Tank.Point(0,0)));
-        this.sceneManager_.push(new Tank.Zombie(new Tank.Point(200,0)));
-        this.sceneManager_.push(new Tank.Zombie2(new Tank.Point(400,0)));
-    }
-	
-	/*var objs = map.objs;
-	for(var i in objs){
-		var obj = objs[i];
-		this.createObj(obj);
-	}*/
-	
+*/	
 }
 Tank.MapManager.createObj = function(obj){
-	var push = this.sceneManager_.push;
-	if(!(obj.type && obj.loc)) return;
+	var c = this.createObj_;
+	if(!(obj.type)) return;
+    if(!(obj.loc)) obj.loc = {x:0,y:0};
+    if(!(obj.amount)) obj.amount=1;
+    if(!(obj.distance)) obj.distance={x:0,y:0};
 	switch(obj.type){
+        case("MainTank"):
+            var t= new Tank.MainTank(new Tank.Point(obj.loc))
+            Tank.SceneManager.push(t);
+            Tank.SceneManager.mainTank = t;
+            break;
 		case("Zombie"):
-			push(new Tank.Zombie(obj.loc));
+			c(Tank.Zombie, obj);
+            break;
 		case("Zombie2"):
-			push(new Tank.Zombie2(obj.loc));
+			c(Tank.Zombie2, obj);
+            break;
 		case("RandomTank"):
-			push(new Tank.RandomTank(obj.loc));
+			c(Tank.RandomTank, obj);
+            break;
+        case("Emplacement"):
+			c(Tank.Emplacement, obj);
+            break;
+
+        case("Rock"):
+			c(Tank.Rock, obj);
+            break;
+        case("Rock2"):
+			c(Tank.Rock2, obj);
+            break;
+        case("Tree"):
+			c(Tank.Tree, obj);
+            break;
+        case("Tree2"):
+			c(Tank.Tree2, obj);
+            break;
+
+        case("Plaster"):
+			c(Tank.Plaster, obj);
+            break;
+        case("Equip0"):
+			c(Tank.Equip0, obj);
+            break;
+        
 	}
+}
+Tank.MapManager.createObj_ = function(Con, obj){
+    for(var i = 0; i < obj.amount; i++) {
+        Tank.SceneManager.push(new Con(new Tank.Point(obj.loc.x + obj.distance.x*i, obj.loc.y + obj.distance.y*i)));
+    }
 }
 /**************控制面板**********/
 Tank.Panel = {};

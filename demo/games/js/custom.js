@@ -175,6 +175,11 @@ Tank.Tree2 = function(loc){
        this.imgs_ = [Tank.createImg("img/walls/treeb1.png"),Tank.createImg("img/walls/treeb2.png")];
 }
 goog.inherits(Tank.Tree2, Tank.Tree);
+Tank.Rock2 = function(loc){
+       Tank.Rock2.superClass_.constructor.call(this, loc); 
+       this.imgs_ = [Tank.createImg("img/walls/rockb1.png"),Tank.createImg("img/walls/rockb2.png")];
+}
+goog.inherits(Tank.Rock2, Tank.Rock);
 /********emplacement**********/
 //无法移动的炮台，会自动攻击附近在射程内的敌人
 //此时的移动方向只是发射子弹的方向

@@ -11,6 +11,7 @@ goog.require("goog.dom");
 <script src="js/custom.js"></script>
 <script src="js/tank_client.js"></script>
 <script src="js/ai.js"></script>
+<script src="js/maps.js"></script>
 </head>
 <body>
 <h2 id="error" style="display:none;">你的浏览器竟然不支持canva，赶紧换成chrome/firefox/safari</h2>
@@ -20,8 +21,7 @@ goog.require("goog.dom");
 var canvas = goog.dom.getElement("canvas");
 if(!canvas.getContext) goog.dom.getElement("error").style.display="block";
 else{
-    var tankClient = new Tank.TankClient();
-    tankClient.decorate(canvas);
+    Tank.decorate(canvas);
 }
 </script>
 </body>

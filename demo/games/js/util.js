@@ -156,3 +156,5 @@ Tank.path.g = function(p, start){
 Tank.path.h = function(p ,end){
 	return Math.abs(p.x - end.x) + Math.abs(p.y - end.y);
 }
+
+//延迟调用一个函数
