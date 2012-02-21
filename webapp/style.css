@@ -1,0 +1,21 @@
+p{
+    margin:0px;
+}
+.ui-content{
+    padding:0px 25px 0px 25px;
+    min-height:400px;
+}
+.ui-footer{
+    padding:10px;
+}
+.clearfix:after{
+    content:".";
+    display:block;
+    height:0;
+    clear:both;
+    visibility:hidden;
+}
+.clearfix{
+    zoom:1;
+}
+
