@@ -6,14 +6,19 @@ var map1 = {
     author:'axun',
     time:'2012-02-21',
     objs:[
+
+        {type:"Equip0", loc:{x:300,y:50}},
+
         {type:"MainTank",loc:{x:200,y:400}},
         {type:"Zombie",loc:{x:0,y:0}, amount:4},
         {type:"Zombie2",loc:{x:200,y:0}, amount:4},
         {type:"RandomTank",loc:{x:400,y:0},amount:4},
         {type:"Emplacement", loc:{x:200,y:200}, amount:2, distance:{x:100, y:0}},
-        {type:"Rock", loc:{x:0,y:2}, amount:12, distance:{x:1, y:0}},
-        {type:"Tree", loc:{x:4,y:4}, amount:12, distance:{x:1, y:0}},
 
+
+        {type:"Rock", loc:{x:0,y:2}, amount:10, distance:{x:1, y:0}},
+        {type:"SteelRock", loc:{x:10,y:2}, amount:3, distance:{x:1, y:0}},
+        {type:"Tree", loc:{x:4,y:4}, amount:12, distance:{x:1, y:0}},
         {type:"Rock2", loc:{x:0,y:6}, amount:12, distance:{x:1, y:0}},
         {type:"Tree2", loc:{x:4,y:8}, amount:12, distance:{x:1, y:0}},
 
@@ -29,6 +34,10 @@ var map2 = {
     author:'axun',
     time:'2012-02-21',
     objs:[
+
+        {type:"Equip1", loc:{x:300,y:50}},
+        {type:"Equip3", loc:{x:400,y:200}},
+
         {type:"MainTank",loc:{x:200,y:400}},
         {type:"Zombie",loc:{x:0,y:0}, amount:6},
         {type:"Zombie2",loc:{x:200,y:0}, amount:6},
@@ -36,6 +45,7 @@ var map2 = {
         {type:"RandomTank",loc:{x:400,y:400},amount:6},
         {type:"Emplacement", loc:{x:200,y:200}, amount:2, distance:{x:100, y:0}},
         {type:"Rock", loc:{x:0,y:2}, amount:6, distance:{x:1, y:0}},
+        {type:"SteelRock", loc:{x:3,y:8}, amount:4, distance:{x:0, y:1}},
         {type:"Tree", loc:{x:6,y:2}, amount:6, distance:{x:1, y:0}},
         {type:"Tree", loc:{x:3,y:6}, amount:9, distance:{x:1, y:0}},
         {type:"Tree", loc:{x:6,y:3}, amount:9, distance:{x:0, y:1}},
@@ -51,6 +61,9 @@ var map3 = {
     author:'axun',
     time:'2012-02-21',
     objs:[
+
+        {type:"Equip2", loc:{x:300,y:250}},
+
         {type:"MainTank",loc:{x:200,y:400}},
         {type:"Zombie",loc:{x:0,y:0}, amount:8},
         {type:"Zombie2",loc:{x:200,y:0}, amount:8},
@@ -59,6 +72,7 @@ var map3 = {
         {type:"Emplacement", loc:{x:200,y:200}, amount:3, distance:{x:50, y:0}},
         {type:"Rock", loc:{x:0,y:2}, amount:6, distance:{x:1, y:0}},
         {type:"Rock2", loc:{x:8,y:8}, amount:6, distance:{x:1, y:0}},
+        {type:"SteelRock", loc:{x:3,y:3}, amount:3, distance:{x:0, y:1}},
         {type:"Tree2", loc:{x:6,y:2}, amount:6, distance:{x:1, y:0}},
         {type:"Tree", loc:{x:3,y:6}, amount:9, distance:{x:1, y:0}},
         

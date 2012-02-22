@@ -210,16 +210,6 @@ Tank.SceneManager.act = function(){
         Tank.SceneManager.all_[i].act();
         if(Tank.SceneManager.refreshCount_ <= 0){
             Tank.SceneManager.all_[i].tick();
-            if(Tank.SceneManager.mainTank.alive_ == false){
-                tank.pause(),Tank.MapManager.reload(),tank.pause();
-            }else{
-                if(!Tank.SceneManager.hasEnimy() && Tank.SceneManager.seconds_>5) {
-                    tank.pause();
-                    Tank.MapManager.next();
-                    tank.pause();
-                }
-            }
-            Tank.SceneManager.seconds_ ++;
         }
     }
 	for(var i in barrier){
@@ -232,6 +222,16 @@ Tank.SceneManager.act = function(){
         Tank.SceneManager.refreshCount_ = 1000/Tank.refresh_
     }
     Tank.SceneManager.refreshCount_ --;    //用来记录是不是过了一秒钟
+    if(Tank.SceneManager.refreshCount_ <= 0){
+            if(Tank.SceneManager.mainTank.alive_ == false && Tank.SceneManager.seconds_>5){
+                Tank.MapManager.reload();
+            }else{
+                if(!Tank.SceneManager.hasEnimy() && Tank.SceneManager.seconds_>5) {
+                    Tank.MapManager.next();
+                }
+            }
+            Tank.SceneManager.seconds_ ++;
+        }
 }
 
 //私有函数
@@ -252,7 +252,7 @@ Tank.SceneManager.refreshBarrierMap = function(){
 Tank.SceneManager.removeAll = function(){
     Tank.SceneManager.all_ = [];
     Tank.SceneManager.barrier_ = [];
-	
+    Tank.SceneManager.barrierMap_ = [];
 }
 Tank.SceneManager.hasEnimy = function(){
     var all = Tank.SceneManager.all_;
@@ -302,7 +302,7 @@ Tank.MapManager.init = function(){
 }
 
 Tank.MapManager.start = function(){
-    Tank.MapManager.index_ = 0;
+    Tank.MapManager.index_ = 2;
     this.load(Tank.MapManager.index_);
 }
 Tank.MapManager.next = function(){
@@ -324,6 +324,8 @@ Tank.MapManager.load = function(index){
 //解析地图
 Tank.MapManager.parseMap = function(map){
     Tank.SceneManager.removeAll();
+    Tank.SceneManager.seconds_ = 0; 
+    Tank.SceneManager.stopAct_ = false;
     var objs = map.objs;
     for(var i in objs){
         this.createObj(objs[i]);
@@ -381,6 +383,9 @@ Tank.MapManager.createObj = function(obj){
         case("Rock2"):
 			c(Tank.Rock2, obj);
             break;
+        case("SteelRock"):
+			c(Tank.SteelRock, obj);
+            break;
         case("Tree"):
 			c(Tank.Tree, obj);
             break;
@@ -394,7 +399,20 @@ Tank.MapManager.createObj = function(obj){
         case("Equip0"):
 			c(Tank.Equip0, obj);
             break;
-        
+        case("Equip1"):
+			c(Tank.Equip1, obj);
+            break;
+        case("Equip2"):
+			c(Tank.Equip2, obj);
+            break;
+        case("Equip3"):
+			c(Tank.Equip3, obj);
+            break;
+        case("Equip4"):
+			c(Tank.Equip4, obj);
+            break;
+
+
 	}
 }
 Tank.MapManager.createObj_ = function(Con, obj){

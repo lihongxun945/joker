@@ -82,7 +82,7 @@ Tank.Equip2.prototype.equip = function(){
 
 
 //辉耀
-//增加5点攻击，每秒对100半径类的敌人造成5点伤害
+//增加5点攻击，每秒对100半径类的敌人造成10点伤害
 Tank.Equip3 = function(loc){
     Tank.Equip3.superClass_.constructor.call(this, loc);
     this.name_ = "辉耀";
@@ -293,7 +293,7 @@ goog.inherits(Tank.Zombie2, Tank.FireMovable);
 Tank.MainTank = function(){
     Tank.MainTank.superClass_.constructor.call(this);
     this.showBloodBar_ = true;
-    this.hp_ = this.hpLimit_ = 300;
+    this.hp_ = this.hpLimit_ = 500;
 
     this.camp_ = 1;
     this.canEatFood_ = true;
@@ -302,7 +302,7 @@ Tank.MainTank = function(){
     this.ais_.push(new Tank.KeyAI(this));
     this.bulletPower_  = 30;
     this.Bullet_ = Tank.SwordBullet;
-    this.fireRange_ = 300;
+    this.fireRange_ = 250;
     this.mp_ = this.mpLimit_ = 200;
 	
     //设置图片

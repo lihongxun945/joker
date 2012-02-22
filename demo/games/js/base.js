@@ -602,10 +602,10 @@ Tank.SteelRock = function(gridLoc){
 	this.gridLoc_ = gridLoc;
 	loc = new Tank.Point(gridLoc.x * 50, gridLoc.y * 50);
        Tank.SteelRock.superClass_.constructor.call(this, "steel", undefined, loc); 
-       var img = new Image();
-       img.src = "img/walls/wall0.png";
-       this.imgs_ = [img];
+       this.imgs_ = [Tank.createImg("img/walls/rockc1.png"),Tank.createImg("img/walls/rockc2.png")];
        this.camp_ = 0;
+
+       this.changeImageTime_ = 20;
        this.invincible_ = true;
        this.isBarrier4Walk_ = true;
 	   this.isBarrier_ = true;
