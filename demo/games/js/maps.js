@@ -23,8 +23,8 @@ var map1 = {
         {type:"Tree2", loc:{x:4,y:8}, amount:12, distance:{x:1, y:0}},
 
         
+        {type:"Barrack", loc:{x:0,y:0}}
         ]
-
 
 }
 

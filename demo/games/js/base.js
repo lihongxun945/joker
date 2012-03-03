@@ -653,7 +653,7 @@ Tank.Message.prototype.draw = function(){
 
 /*******爆炸动画*********/
 Tank.Explode = function(loc){
-    Tank.Food.superClass_.constructor.call(this,  "explode", null, loc); 
+    Tank.Explode.superClass_.constructor.call(this,  "explode", null, loc); 
     this.isBarrier4Bullet_ = false;
     this.isBarrier4Walk_ = false;
     for(var i = 0; i < 11; i++){
@@ -760,3 +760,38 @@ Tank.Equip.prototype.fire = function(){
 }
 
 
+/*兵营*/
+Tank.Barrack = function(gridLoc){
+    this.gridLoc_ = gridLoc;
+	loc = new Tank.Point(gridLoc.x * 50, gridLoc.y * 50);
+
+    Tank.Barrack.superClass_.constructor.call(this,  "explode", null, loc); 
+    this.isBarrier4Bullet_ = true;
+    this.isBarrier4Walk_ = true;
+    this.invincible_ = true;
+    this.imgs_ = [Tank.createImg("img/walls/barrack.png")];
+    this.camp_ = 0;
+    this.Life_ = Tank.RandomTank;// 此兵营会产生的小兵
+    this.lifeCamp_ = 2; // 此兵营产生的小兵所属阵营
+    this.amount_ = 20;  //产生的小兵总数，达到此数后不会再产生
+    this.time_ = 20;    //每20秒产生一个小兵
+    this.timeCount_ = this.time_;
+}
+goog.inherits(Tank.Barrack, Tank.BaseObject);
+Tank.Barrack.prototype.tick = function(){
+    Tank.Barrack.superClass_.tick.call(this);
+    this.timeCount_ --;
+    if(this.timeCount_ < 0) {
+        this.produce();
+        this.timeCount_ = this.time_;
+    }
+}
+
+Tank.Barrack.prototype.produce = function(){
+    if(!this.Life_) return;
+    var life = new this.Life_(new Tank.Point(this.loc_.x, this.loc_.y + 50));
+    life.camp_ = this.lifeCamp_;
+    life.move(4);
+    life.say("新鲜出炉--");
+    Tank.SceneManager.push(life);
+}

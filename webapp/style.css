@@ -43,13 +43,14 @@ border-radius: 4px;
 }
 
 .answer .content{
+padding:2px;
 }
 .answer .content h3{
 padding:0px;
 margin:10px 0 10px 0;
 }
 .answer .question-head{
-    padding-bottom:10px;
+    padding:6px;
 }
 .answer .answer-info{
 border: 1px solid #C5CACE;
@@ -85,7 +86,7 @@ background: #EBEBEB;
     display:block;
 }
 .answer .answer-body{
-padding: 15px;
+padding: 15px 10px 15px 10px;
 border: 1px solid #C5CACE;
 background: #F7F7F7;
 position: relative;

@@ -146,6 +146,7 @@ Tank.TankClient.prototype.start = function(){
         this.mapManager_.start();
         Tank.status_ = "run";
         Tank.timer_.start();
+        Tank.dialog_.setVisible(false);
     }
 }
 //pause/unpause the game
@@ -162,6 +163,7 @@ Tank.TankClient.prototype.pause = function(){
     }else if(Tank.status_ == "pause"){
         Tank.timer_.start();
         Tank.status_ = "run";
+        Tank.dialog_.setVisible(false);
     }
 }
 Tank.TankClient.prototype.stop = function(){
@@ -422,6 +424,11 @@ Tank.MapManager.createObj = function(obj){
         case("Equip4"):
 			c(Tank.Equip4, obj);
             break;
+
+        case("Barrack"):
+			c(Tank.Barrack, obj);
+            break;
+
 
 
 	}
