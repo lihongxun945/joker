@@ -31,18 +31,15 @@ Tank.TankClient.prototype.init = function(){
     this.sceneManager_.push(Tank.globalMessage_);
     this.mapManager_ = Tank.MapManager;
 
-    var lastStyle = this.canvas_.fillStyle;
-    this.canvas_.fillStyle = "rgb(0, 0, 0)";
-    this.canvas_.fillText("HTML5 GAME v0.1。", 300, 200);
-    this.canvas_.fillStyle = "rgb(255, 0, 0)";
-    this.canvas_.fillText("" +
-            "按键说明： 方向键移动，A 发攻击，s使用魔法，P暂停游戏，" +
-            "未完，待续>>" +
-            "", 100, 250);
-	this.canvas_.fillText("" +
-		"声明：所有图片均来自网络。" +
-		"", 100, 500);
-    this.canvas_.fillStyle = lastStyle;
+    Tank.dialog_ = new Tank.Dialog();
+    var html = "";
+    html +="<h2>HTML5 GAME v0.2</h2>";
+    html +="<p>按键说明：</p>";
+    html +="<p>A攻击，S魔法，P暂停，方向键移动。</p>";
+    html +="<p>一切图片均来源于网络。<p>";
+    html +="<p>未完待续⋯⋯<p>";
+    Tank.dialog_.show(html);
+
 	this.loadImg();
 }
 Tank.TankClient.imgsLoadedCount_ = 0;
@@ -71,6 +68,8 @@ Tank.TankClient.prototype.loadImg = function(){
 	imgs.set("rocka2.png", "img/walls/rocka2.png");
 	imgs.set("rockb1.png", "img/walls/rockb1.png");
 	imgs.set("rockb2.png", "img/walls/rockb2.png");
+	imgs.set("rockb2.png", "img/walls/rockc1.png");
+	imgs.set("rockb2.png", "img/walls/rockc2.png");
 	imgs.set("bullet.png", "img/bullets/bullet.png");
 	imgs.set("bullets.png", "img/bullets/bullets.png");
 	imgs.set("equip0.png", "img/equips/equip_0.gif");
@@ -93,6 +92,7 @@ Tank.TankClient.prototype.loadImg = function(){
         this.handleImageLoaderEvent);
 	
 	imgLoader.start();
+    
 }
 
 Tank.TankClient.prototype.handleImageLoaderEvent = function(e){
@@ -168,6 +168,17 @@ Tank.TankClient.prototype.stop = function(){
 }
 
 
+Tank.Dialog = function(){
+    this.dialog_ = goog.dom.getElement("dialog");
+}
+Tank.Dialog.prototype.show = function(html, opt_time){
+    this.setVisible(true);
+    this.dialog_.innerHTML = html;
+}
+
+Tank.Dialog.prototype.setVisible = function(b){
+    goog.style.showElement(this.dialog_, b);
+}    
 /****************SceneManager**************/
 //管理所有的物体，负责通知每个物体执行刷新操作，负责剔除死亡物体。
 //负责一切查找物体的操作
@@ -302,7 +313,7 @@ Tank.MapManager.init = function(){
 }
 
 Tank.MapManager.start = function(){
-    Tank.MapManager.index_ = 2;
+    Tank.MapManager.index_ = 0;
     this.load(Tank.MapManager.index_);
 }
 Tank.MapManager.next = function(){

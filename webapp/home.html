@@ -6,59 +6,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"> 
     <title>知乎-登陆</title> 
     <link rel="stylesheet" href="../static/js/jqmobile/jquery.mobile-1.0.1.min.css" />
-    <link rel="stylesheet" href="style.css" />
     <script src="../static/js/jqmobile/jquery-1.7.1.js"></script>
     <script src="../static/js/jqmobile/jquery.mobile-1.0.1.min.js"></script>
+
+    <link rel="stylesheet" href="style.css" />
 
 </head> 
 
 <body> 
 
-    <div data-role="page">
+    <div data-role="page" class="home">
 
-        <div data-role="header" data-theme="b">
-            <a href="index.html" class="ui-button-left" data-transition="flip" data-icon="minus">登出</a>
+        <div data-role="header" data-position="fixed" data-theme="b">
+            <a href="index.html" data-transition="flip" data-icon="minus">登出</a>
             <h1>最新动态</h1>
-            <a href="index.html" class="ui-button-right" data-transition="flip" data-icon="refresh">刷新</a>
+            <a href="index.html" data-transition="flip" data-icon="refresh">刷新</a>
         </div><!-- /header -->
 
-        <div data-role="content" data-theme="b" style="padding:0px;">   
-            <ul data-theme="c" style="margin:0px;padding:0px">  <!--有些浏览器会自动加上margin和padding-->
-                <li data-theme="c" class="ui-btn ui-btn-icon-right ui-li-has-arrow ui-li ui-li-has-count ui-btn-up-c">
-                    <div class="ui-li clearfix" style="padding:10px;">
-                            <a style="float:left;margin:5px;;"><img class="" src="http://p4.zhimg.com/ee/c7/eec7c6a17_s.jpg" title="OurDearAmy"></a>
-                            <a style="display:block;margin-left:45px;">
-                                <h4 style="font-size:15px;font-weight:bold;margin:5px 0;">投资者如何从招股说明书中读出关于公司的有价值的信息？</h4>
-                                <p style="font-size:12px;font-weight:normal;color:#000;">邀。 @罗璞 的答案很标准很细致，不愧是写招股说明书的人。如果可能的话，最...</p>
-                            </a>
-                    </div>
+        <div data-role="content" data-theme="b" class="content">   
+            <ul data-role="listview" data-theme="c"> 
+                <li><a href="answer_item.html">
+                    <img src="images/album-mg.jpg">
+                    <h3>你所在的行业和工作是怎样的，收入、发展前景和挑战如何？</h3>
+                    <p>张三丰 &bull; 武当掌门人，一代宗师</p>
+                </a>
                 </li>
-                <li data-theme="c" class="ui-btn ui-btn-icon-right ui-li-has-arrow ui-li ui-li-has-count ui-btn-up-c">
-                    <div class="ui-li clearfix" style="padding:10px;">
-                            <a style="float:left;margin:5px;;"><img class="" src="http://p4.zhimg.com/ee/c7/eec7c6a17_s.jpg" title="OurDearAmy"></a>
-                            <a style="display:block;margin-left:45px;">
-                                <h4 style="font-size:15px;font-weight:bold;margin:5px 0;">投资者如何从招股说明书中读出关于公司的有价值的信息？</h4>
-                                <p style="font-size:12px;font-weight:normal;color:#000;">邀。 @罗璞 的答案很标准很细致，不愧是写招股说明书的人。如果可能的话，最...</p>
-                            </a>
-                    </div>
+                <li><a href="answer_item.html">
+                    <img src="images/album-mg.jpg">
+                    <h3>KTV 的选歌系统的交互设计为什么一个比一个烂？用户体验对于 KTV 的意义如何？如果是你来设计，你会设计成什么样的？</h3>
+                    <p>张三丰 &bull; 武当掌门人，一代宗师</p>
+                </a>
                 </li>
-                <li data-theme="c" class="ui-btn ui-btn-icon-right ui-li-has-arrow ui-li ui-li-has-count ui-btn-up-c">
-                    <div class="ui-li clearfix" style="padding:10px;">
-                            <a style="float:left;margin:5px;;"><img class="" src="http://p4.zhimg.com/ee/c7/eec7c6a17_s.jpg" title="OurDearAmy"></a>
-                            <a style="display:block;margin-left:45px;">
-                                <h4 style="font-size:15px;font-weight:bold;margin:5px 0;">投资者如何从招股说明书中读出关于公司的有价值的信息？</h4>
-                                <p style="font-size:12px;font-weight:normal;color:#000;">邀。 @罗璞 的答案很标准很细致，不愧是写招股说明书的人。如果可能的话，最...</p>
-                            </a>
-                    </div>
+                <li><a href="answer_item.html">
+                    <img src="images/album-mg.jpg">
+                    <h3>你所在的行业和工作是怎样的，收入、发展前景和挑战如何？</h3>
+                    <p>张三丰 &bull; 武当掌门人，一代宗师</p>
+                </a>
+                </li>
+                <li><a href="answer_item.html">
+                    <img src="images/album-mg.jpg">
+                    <h3>KTV 的选歌系统的交互设计为什么一个比一个烂？用户体验对于 KTV 的意义如何？如果是你来设计，你会设计成什么样的？</h3>
+                    <p>张三丰 &bull; 武当掌门人，一代宗师</p>
+                </a>
+                </li>
+                <li><a href="answer_item.html">
+                    <img src="images/album-mg.jpg">
+                    <h3>你所在的行业和工作是怎样的，收入、发展前景和挑战如何？</h3>
+                    <p>张三丰 &bull; 武当掌门人，一代宗师</p>
+                </a>
+                </li>
+                <li><a href="answer_item.html">
+                    <img src="images/album-mg.jpg">
+                    <h3>KTV 的选歌系统的交互设计为什么一个比一个烂？用户体验对于 KTV 的意义如何？如果是你来设计，你会设计成什么样的？</h3>
+                    <p>张三丰 &bull; 武当掌门人，一代宗师</p>
+                </a>
                 </li>
             </ul>
             
         </div><!-- /content -->
 
-        <div data-role="footer" data-theme="b">
-            <a href="home.html" data-icon="home">首页</a>
-            <a href="find.html" data-icon="search">发现</a>
-            <a href="profile.html" data-icon="star">我</a>
+        <div data-role="footer" class="ui-grid-b" data-position="fixed" data-id="globale-footer" data-theme="b">
+            <div data-role="navbar" role="navigation" class="ui-navbar ui-navbar-noicons">
+                <a href="home.html" class="ui-block-a ui-btn-active" data-icon="home">首页</a>
+                <a href="find.html" class="ui-block-b" data-icon="search">发现</a>
+                <a href="profile.html" class="ui-block-c" data-icon="star">我</a>
+            </div>
         </div><!-- /footer -->
 
     </div><!-- /page -->
