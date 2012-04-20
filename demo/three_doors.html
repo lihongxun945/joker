@@ -1,0 +1,54 @@
+<div id="log"></div>
+<script>
+function log(m){
+    var el = document.getElementById("log");
+    el.innerHTML += (m + "<br />");
+}
+//随机返回 0 - i-1 之间的一个数
+function rand(i){
+    return(parseInt(Math.random()*i));
+}
+function change(select, gold){
+    var open = 0;   //主持人打开的那扇门
+    for(var i=0;i<3;i++){
+        if(i != select && i != gold){
+            open = i;   //打开一扇没有奖品的门,好像不是太随机，因为当select == gold 时，主持人总是会打开序号最小的那扇门，但是这个对概率没有影响
+        }
+    }
+    for(var j=0;j<3;j++){
+        if(j!=open && j!=select) return j; 
+    }
+}
+
+function test(num){
+    var win1 = 0;//不换，赢的次数
+    var win2 = 0;//换，赢得次数
+    for(var i=0; i<num; i++){
+        var gold = rand(3); //有奖品的号码
+        var select = rand(3);//观众选择的号码
+        change(select, gold);    //不换, 实际是无用操作
+        if(select == gold){
+           win1 ++; 
+        }
+        select = change(select, gold);  //换一扇门, 因为结果不会互相影响，所以可以写在一个函数中,换成两个独立函数后结果也一样。
+        if(select == gold){
+            win2 ++;
+        }
+    }
+    log("*****************sammary***************");
+    log("test " + num + " times: " + win1/num + "," +win2/num);
+}
+function test2(num){
+    var win = 0;
+    for(var i=0; i<num; i++){
+        var gold = rand(3); //有奖品的号码
+        var select = rand(3);//观众选择的号码
+        select = change(select, gold); //换
+        if(select == gold){
+           win ++; 
+        }
+    }
+    log("test " + num + " times: " + win/num);
+}
+test(10000); //测试n次
+</script>
