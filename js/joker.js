@@ -95,6 +95,27 @@ joker.Queue.prototype.remove = function(obj){
 joker.Queue.prototype.getArray= function(){
 	return this.queue;
 }
+
+/*
+********************************************************
+********************** uti *************************
+**********************************************************
+*/
+joker.uti = joker.uti || {};
+/**
+  *缓存一个函数，当用相同的参数调用此函数时会立即返回结果。
+  *@param {Function} f:function to cache
+  *@return *;
+  */
+joker.uti.memoize = function (f){
+         var cache = {};
+         return function(){
+             var key = arguments.length + Array.prototype.join.call(arguments, ",");
+             if(key in cache) return cache[key];
+             else return cache[key]=f.apply(this, arguments);
+         };
+}
+
 /*
 ********************************************************
 ********************** bom *************************
@@ -121,6 +142,136 @@ joker.bom.getURLArgs = function(){
 }
 
 
+/**
+  *获取操作系统类型，浏览器类型，浏览器版本
+  *@return {Object}: 三个属性:OS,browser,version
+  *@ref http://www.quirksmode.org/js/detect.html;
+  */
+joker.bom.getBrower = function(){
+var BrowserDetect = {
+        init: function () {
+                  this.browser = this.searchString(this.dataBrowser) || "An unknown browser";
+                  this.version = this.searchVersion(navigator.userAgent)
+                      || this.searchVersion(navigator.appVersion)
+                      || "an unknown version";
+                  this.OS = this.searchString(this.dataOS) || "an unknown OS";
+              },
+        searchString: function (data) {
+                  for (var i=0;i<data.length;i++) {
+                      var dataString = data[i].string;
+                      var dataProp = data[i].prop;
+                      this.versionSearchString = data[i].versionSearch || data[i].identity;
+                      if (dataString) {
+                          if (dataString.indexOf(data[i].subString) != -1)
+                              return data[i].identity;
+                      }
+                      else if (dataProp)
+                          return data[i].identity;
+                  }
+              },
+        searchVersion: function (dataString) {
+                   var index = dataString.indexOf(this.versionSearchString);
+                   if (index == -1) return;
+                   return parseFloat(dataString.substring(index+this.versionSearchString.length+1));
+               },
+        dataBrowser: [
+             {
+                string: navigator.userAgent,
+                subString: "Chrome",
+                identity: "Chrome"
+             },
+             {   string: navigator.userAgent,
+                subString: "OmniWeb",
+               versionSearch: "OmniWeb/",
+               identity: "OmniWeb"
+             },
+             {
+                string: navigator.vendor,
+                        subString: "Apple",
+                        identity: "Safari",
+                versionSearch: "Version"
+             },
+             {
+prop: window.opera,
+      identity: "Opera",
+      versionSearch: "Version"
+             },
+             {
+string: navigator.vendor,
+        subString: "iCab",
+        identity: "iCab"
+             },
+             {
+string: navigator.vendor,
+        subString: "KDE",
+        identity: "Konqueror"
+             },
+             {
+string: navigator.userAgent,
+        subString: "Firefox",
+        identity: "Firefox"
+             },
+             {
+string: navigator.vendor,
+        subString: "Camino",
+        identity: "Camino"
+             },
+             {       // for newer Netscapes (6+)
+string: navigator.userAgent,
+        subString: "Netscape",
+        identity: "Netscape"
+             },
+             {
+string: navigator.userAgent,
+        subString: "MSIE",
+        identity: "Explorer",
+        versionSearch: "MSIE"
+             },
+             {
+string: navigator.userAgent,
+        subString: "Gecko",
+        identity: "Mozilla",
+        versionSearch: "rv"
+             },
+             {       // for older Netscapes (4-)
+string: navigator.userAgent,
+        subString: "Mozilla",
+        identity: "Netscape",
+        versionSearch: "Mozilla"
+             }
+              ],
+                  dataOS : [
+                  {
+string: navigator.platform,
+        subString: "Win",
+        identity: "Windows"
+                  },
+                  {
+string: navigator.platform,
+        subString: "Mac",
+        identity: "Mac"
+                  },
+                  {
+string: navigator.userAgent,
+        subString: "iPhone",
+        identity: "iPhone/iPod"
+                  },
+                  {
+string: navigator.platform,
+        subString: "Linux",
+        identity: "Linux"
+                  }
+              ]
+
+};
+BrowserDetect.init();
+var o = {
+    "OS":BrowserDetect.OS,
+    "browser":BrowserDetect.browser,
+    "version":BrowserDetect.version
+}
+return o;
+}
 /*
 ********************************************************
 ********************** dom 操作 *************************
@@ -191,6 +342,13 @@ joker.dom.getChildren = function(elm){
 *@refer http://www.cnblogs.com/rubylouvre/archive/2009/07/24/1529640.html
 */
 joker.dom.getElementsByClassName = function(strClassName, opt_elm){
+    if(!opt_elm){
+        if(document.getElementsByClassName){    //ie8及以下版本不支持此方法
+            return document.getElementsByClassName(strClassName);
+        }else if(querySelectorAll){
+            return querySelectorAll(strClassName);  //ie8 支持此方法。
+        }
+    }
     var arrElements = (opt_elm == undefined)?(document.all || document.getElementsByTagName("*")):(opt_elm.all || opt_elm.getElementsByTagName("*"));
     //只有ie支持all，非ie用getElementsByTagName("*")
     var arrResults = new Array();
@@ -224,6 +382,7 @@ joker.dom.getElementsByTagName = function(strTagName, opt_elm){
 *@time 2011.10.23
 */
 joker.dom.getElementById = function(strId, opt_elm){
+    if(!opt_elm) return document.getElementById(strId);
 	var arrElements = (opt_elm == undefined)?(document.all || document.getElementsByTagName("*")):(opt_elm.all || opt_elm.getElementsByTagName("*"));
 	//只有ie支持all，非ie用getElementsByTagName("*")
 	var arrResults = new Array();
@@ -269,21 +428,6 @@ joker.dom.getChildrenByTagName = function(strTagName, opt_elm){
 	}
 	return arrResults;
 }
-/*
-*在children中根据id来取元素
-*@param {String} strId:
-*@param {Elementlement} opt_elm:
-*@return {Element}
-*@time 2011.10.23
-*/
-joker.dom.getChildById = function(strId, opt_elm){
-	objElm = opt_elm || document;
-	var children = joker.dom.getChildren(objElm);
-	for(var i = 0; i < children.length; i++){
-		if(children[i].id == strId) return children[i];
-	}
-}
-
 
 /**
   *取得第一个Element类型的孩子节点
@@ -440,6 +584,16 @@ joker.dom.removeChild = function(parent,child){
 }
 
 /**
+  *删除一个节点,返回被删除的节点
+  *@param {Node}
+  *@return {Node}
+  *@time 2011.11.01
+  */
+joker.dom.removeNode = function(node){
+	return node.parentNode.removeChild(node);
+}
+
+/**
   *清空一个节点的子节点,返回被删除的节点数组
   *@param {Node} parent
   *@return {Array<Node>}:被删除的节点 
@@ -516,6 +670,43 @@ joker.dom.replaceChild = function(child, parent, opt_targetChild){
 	return parent.replaceChild(child, opt_targetChild);
 }
 
+/**
+  *当前窗口的滚动位置
+  *@param {Window}: window
+  *@return {Object}:obj.x, obj.y
+  *@ref <<javascript the definitive guide>>
+  */
+joker.dom.getPageOffset = function(opt_win){
+    var w = opt_win || window;
+    if(w.pageXOffset != null) return {x:w.pageXOffset, y:w.pageYOffset};
+    //for ie
+    var d = w.document;
+    if(document.compatMode == "CSS1Compat"){
+        return {x:d.documentElement.scrollLeft, y:d.documentElement.scrollTop};
+    }
+    //for quirks mode
+    return {x:d.body.scrollLeft, y:d.body.scrollTop};
+}
+
+/**
+  *当前可视窗口的大小
+  *@param {Window}: window
+  *@return {Object}:obj.w, obj.h
+  *@ref <<javascript the definitive guide>>
+  */
+joker.dom.getViewportSize = function(opt_win){
+    var w = opt_win || window;
+    if(w.innerWidth != null) return {w:w.innerWidth, h:w.innerHeight};
+    //for ie8-
+    var d = w.document;
+    if(document.compatMode == "CSS1Compat"){
+        return {w:d.documentElement.clientWidth, h:d.documentElement.clientHeight};
+    }
+    //for quirks mode
+    return {w:d.body.clientWidth, h:d.body.clientHeight};
+}
+
+
 /*
 *********************************************************
 ***********************输入输出流*************************
@@ -556,9 +747,49 @@ joker.io.getjsonp = function(strUrl, opt_callback){
 	head.insertBefore( script, head.firstChild);
 	if(opt_callback) opt_callback(); 
 }
+/**
+  *只能是异步的
+  */
+joker.io.ajax = function(url, opt_args, opt_callback, opt_method){
+    if(!url) return;
+    var args = opt_args || "";
+    var method = opt_method || "POST";
+    var callback = opt_callback || null;
+    var xhr;
+    if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+        xhr = new XMLHttpRequest();
+    }else{// code for IE6, IE5
+        xhr = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xhr.onreadystatechange = function()
+    {
+        if (xhr.readyState==4 && xhr.status==200)
+        {
+            var str = xhr.responseText || "";
+            var e = new joker.io.AjaxEventObject(str);
+            if(callback) callback(e);
+        }
+    } 
+    xhr.open(method, url, true);
+    xhr.send(args);
 
+}
+joker.io.AjaxEventObject = function(str){
+    this.str = str || "";
+    this.json = joker.json.parse(str);
+}
 
-
+joker.io.AjaxEventObject.prototype.getString = function(){
+    return this.str;
+}
+joker.io.AjaxEventObject.prototype.getJson = function(){
+    return this.json;
+}
+/*
+*********************************************************
+*********************** Array *************************
+**********************************************************
+*/
 
 /**
 *数组方法
@@ -581,6 +812,11 @@ joker.array.nodeListToArray = function(nodes){
 }
 
 
+/*
+*********************************************************
+*********************** JSON *************************
+**********************************************************
+*/
 
 /**
   *json处理
@@ -595,6 +831,7 @@ joker.json = joker.json || {};
   *@time 2011.11.02
   */
 joker.json.parse = function(str){
+    if(window.JSON) window.JSON.parse(str)
 	return eval("("+str+")");
 }
 
@@ -604,7 +841,6 @@ joker.json.parse = function(str){
   *@param {Object} obj:要序列化的对象
   *@return {String}
   *@time 2011.11.02
-  *@author axun;
   */
 joker.json._seri = function(obj){
 	var strResult = "";
@@ -651,6 +887,7 @@ joker.json._seri = function(obj){
   */
 
 joker.json.serialize = function(obj){
+    if(window.JSON) return window.JSON.stringify(obj);
 	return joker.json._seri(obj);
 }
 
