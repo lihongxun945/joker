@@ -33,7 +33,7 @@
 
         <div data-role="content" data-theme="b">   
             <h3 style="margin-left:10%;">知乎-真实的社交问答平台</h3>
-            <form data-transition="flip" action="/ReaderMobile#home-page">
+            <form data-transition="flip" action="#home-page">
                 <ul style="list-style:none;margin-left:0px;">
                 <li>
                     <label>邮箱：</label><input name="username" type="text" /><br />
@@ -42,10 +42,13 @@
                     <label>密码：</label><input name="username" type="text" /><br />
                 </li>
                 <li>
-                    <input type="submit" data-inline="true" value="login" class="ui-button-right"/>
+                   <!-- <input type="submit" data-inline="true" value="login" class="ui-button-right"/>-->
+                   <a href="#home-page" data-role="button" data-transition="flip">登陆</a>
                 </li>
+                
             </form>
             <a href="" class="ui-button-right">注册账号</a>
+            <a href="" class="ui-button-right">忘记密码</a>
         </div><!-- /content -->
 
         <div data-role="footer" data-position="fixed" data-theme="b">

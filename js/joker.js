@@ -192,74 +192,74 @@ var BrowserDetect = {
                 versionSearch: "Version"
              },
              {
-prop: window.opera,
-      identity: "Opera",
-      versionSearch: "Version"
+                prop: window.opera,
+                identity: "Opera",
+                versionSearch: "Version"
              },
              {
-string: navigator.vendor,
-        subString: "iCab",
-        identity: "iCab"
+                string: navigator.vendor,
+                subString: "iCab",
+                identity: "iCab"
              },
              {
-string: navigator.vendor,
-        subString: "KDE",
-        identity: "Konqueror"
+                string: navigator.vendor,
+                subString: "KDE",
+                identity: "Konqueror"
              },
              {
-string: navigator.userAgent,
-        subString: "Firefox",
-        identity: "Firefox"
+                string: navigator.userAgent,
+                subString: "Firefox",
+                identity: "Firefox"
              },
              {
-string: navigator.vendor,
-        subString: "Camino",
-        identity: "Camino"
+                string: navigator.vendor,
+                subString: "Camino",
+                identity: "Camino"
              },
              {       // for newer Netscapes (6+)
-string: navigator.userAgent,
-        subString: "Netscape",
-        identity: "Netscape"
+                string: navigator.userAgent,
+                subString: "Netscape",
+                identity: "Netscape"
              },
              {
-string: navigator.userAgent,
-        subString: "MSIE",
-        identity: "Explorer",
-        versionSearch: "MSIE"
+                string: navigator.userAgent,
+                subString: "MSIE",
+                identity: "Explorer",
+                versionSearch: "MSIE"
              },
              {
-string: navigator.userAgent,
-        subString: "Gecko",
-        identity: "Mozilla",
-        versionSearch: "rv"
+                string: navigator.userAgent,
+                subString: "Gecko",
+                identity: "Mozilla",
+                versionSearch: "rv"
              },
              {       // for older Netscapes (4-)
-string: navigator.userAgent,
-        subString: "Mozilla",
-        identity: "Netscape",
-        versionSearch: "Mozilla"
+                string: navigator.userAgent,
+                subString: "Mozilla",
+                identity: "Netscape",
+                versionSearch: "Mozilla"
              }
               ],
                   dataOS : [
                   {
-string: navigator.platform,
-        subString: "Win",
-        identity: "Windows"
+                    string: navigator.platform,
+                    subString: "Win",
+                    identity: "Windows"
                   },
                   {
-string: navigator.platform,
-        subString: "Mac",
-        identity: "Mac"
+                    string: navigator.platform,
+                    subString: "Mac",
+                    identity: "Mac"
                   },
                   {
-string: navigator.userAgent,
-        subString: "iPhone",
-        identity: "iPhone/iPod"
+                    string: navigator.userAgent,
+                    subString: "iPhone",
+                    identity: "iPhone/iPod"
                   },
                   {
-string: navigator.platform,
-        subString: "Linux",
-        identity: "Linux"
+                    string: navigator.platform,
+                    subString: "Linux",
+                    identity: "Linux"
                   }
               ]
 
@@ -1062,4 +1062,21 @@ joker.events.getEvent = function(e){
 	e.preventDefault = e.preventDefault || function(){e.returnValue = false;};
 	e.stopPropagation = e.stopPropagation || function(){e.cancelBubble = true;};
 	return e;
+}
+
+
+/********************************************************/
+/*********************String*****************************/
+/********************************************************/
+
+joker.string = joker.string || {};
+
+/**
+  *去掉字符串开头和结尾的空格
+  *@param {String} str
+  *@return {String}
+  *@ref 《javascript the good part》p49
+  */
+joker.string.trim = function(str){
+    return str.replace(/^\s+|\s+$/g, '');
 }

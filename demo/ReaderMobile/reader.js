@@ -1,5 +1,4 @@
 $(function(){
-console.log("ok");
 var ListItem = Backbone.Model.extend({
         defaults:{
             url:"#answer-page",
